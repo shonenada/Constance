@@ -1,4 +1,4 @@
 Constance
 =========
 
-Another toy operate system. 
+A simple operating system.
