@@ -9,4 +9,11 @@ extern int strlen(const char*);
 extern unsigned char inportb(unsigned short _port);
 extern void outportb(unsigned short, unsigned char);
 
+/* scrn.c */
+extern void cls();
+extern void putch(unsigned char);
+extern void puts(unsigned char*);
+extern void settextcolor(unsigned char, unsigned char);
+extern void init_video();
+
 #endif
