@@ -36,6 +36,8 @@ Bochs
 -----
 
 `$ sudo apt-get install bochs`
+`$ sudo apt-get install bochs-x    # 'x' module for bochs`
+`$ sudo apt-get install bochs-term    # or using terminal`
 
 
 Bochs Debugger
