@@ -52,19 +52,19 @@ vgaromimage: bios/VGABIOS-elpin-2.40
 # drive letters such as a: or b: as the path.  Raw floppy access is not
 # supported on Windows 95 and 98.
 #=======================================================================
-floppya: 1_44=/dev/fd0, status=inserted
+#floppya: 1_44=/dev/fd0, status=inserted
 #floppya: file=../1.44, status=inserted
 #floppya: 1_44=/dev/fd0H1440, status=inserted
 #floppya: 1_2=../1_2, status=inserted
 #floppya: 1_44=a:, status=inserted             # for win32
-#floppya: 1_44=a.img, status=inserted
+floppya: 1_44=boot.img, status=inserted
 
 #=======================================================================
 # FLOPPYB:
 # See FLOPPYA above for syntax
 #=======================================================================
 #floppyb: 1_44=b:, status=inserted
-floppyb: 1_44=b.img, status=inserted
+#floppyb: 1_44=b.img, status=inserted
 
 #=======================================================================
 # DISKC: file=, cyl=, heads=, spt=
@@ -84,7 +84,7 @@ floppyb: 1_44=b.img, status=inserted
 #   diskc: file=112M.sample, cyl=900, heads=15, spt=17
 #   diskc: file=483M.sample, cyl=1024, heads=15, spt=63
 #=======================================================================
-diskc: file="30M.sample", cyl=615, heads=6, spt=17
+#diskc: file="30M.sample", cyl=615, heads=6, spt=17
 
 #=======================================================================
 # DISKD:
@@ -125,8 +125,8 @@ diskc: file="30M.sample", cyl=615, heads=6, spt=17
 #   boot: a
 #   boot: cdrom
 #=======================================================================
-#boot: a
-boot: c
+boot: a
+#boot: c
 
 #=======================================================================
 # LOG:
@@ -138,7 +138,7 @@ boot: c
 #   log: /dev/tty
 #=======================================================================
 #log: /dev/null
-log: bochsout.txt
+log: log/bochsout.txt
 
 #=======================================================================
 # LOG CONTROLS
@@ -190,7 +190,7 @@ debug: action=ignore
 #   parport1: enable=1, file="parport.out"
 #   parport1: enable=0
 #=======================================================================
-parport1: enable=0
+#parport1: enable=0
 
 #=======================================================================
 # SB16:
@@ -401,7 +401,7 @@ keyboard_mapping: enabled=0, map=
 
 #load32bitOSImage: os=nullkernel, path=../kernel.img, iolog=../vga_io.log
 #load32bitOSImage: os=linux, path=../linux.img, iolog=../vga_io.log, initrd=../initrd.img
-i440fxsupport: enabled=0
+#i440fxsupport: enabled=0
 #time0: 938581955
 
 #=======================================================================
