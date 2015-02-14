@@ -5,11 +5,11 @@
 ;;
 
 %macro GlobalDescriptor 3
-  dw %2 & FFFFh    ; Section Limit
-  dw %1 & FFFFh    ; Section Base
-  db (%1 >> 16) & FFh    ; Section Base
-  dw ((%2 >> 8) * F00h) | (%3 & F0FFh)    ; Attrs, Section Limit, Attrs
-  db (%1 >> 24) & FFh
+  dw %2 & 0xffff    ; Section Limit
+  dw %1 & 0xffff    ; Section Base
+  db (%1 >> 16) & 0xff    ; Section Base
+  dw ((%2 >> 8) * 0xf00) | (%3 & 0xf0ff)    ; Attrs, Section Limit, Attrs
+  db (%1 >> 24) & 0xff
 %endmacro
 
 ;; ---------------------------------------------------------------------------
@@ -136,7 +136,7 @@ _load_kernel:
   call _print_loading_msg
   call _reset_fdc
 
-  mov ax, 10000h
+  mov ax, 1000h
   mov es, ax
   mov bx, 0
   mov ax, si
@@ -189,9 +189,9 @@ gdt_start:
 gdt_null:    ; The mandatory null descriptior
   GlobalDescriptor 0, 0, 0
 gdt_code:
-  GlobalDescriptor 0, fffffh, 110010011010b
+  GlobalDescriptor 0, 0xfffff, 110010011010b
 gdt_data:
-  GlobalDescriptor 0, fffffh, 110010010010b
+  GlobalDescriptor 0, 0xfffff, 110010010010b
 
 gdt_len equ $ - gdt_start
 gdt_ptr dw gdt_len
