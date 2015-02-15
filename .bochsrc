@@ -58,7 +58,7 @@ vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
 #floppya: 1_44=/dev/fd0H1440, status=inserted
 #floppya: 1_2=../1_2, status=inserted
 #floppya: 1_44=a:, status=inserted             # for win32
-floppya: 1_44=boot.img, status=inserted
+floppya: 1_44=kernel.img, status=inserted
 
 #=======================================================================
 # FLOPPYB:

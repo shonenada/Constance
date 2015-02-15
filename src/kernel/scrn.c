@@ -1,10 +1,10 @@
 #include <system.h>
 
-unsigned short *textmemptr;
+unsigned char *textmemptr;
 int attrib = 0x0F;
 int csr_x = 0, csr_y = 0;
 
-void  scroll(void) {
+void scroll(void) {
     unsigned blank, temp;
     blank = 0x20 | (attrib << 8);
     if (csr_y >= 25) {

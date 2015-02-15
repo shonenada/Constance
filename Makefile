@@ -1,10 +1,25 @@
+CINC := -Isrc/include
+CFLAGS := -Wall -nostdinc -fno-builtin -fno-stack-protector \
+		 -finline-functions -finline-small-functions -findirect-inlining \
+		 -finline-functions-called-once
+
 include build/boot.mk
+include build/kern.mk
 
 boot: boot.img
+
+kernel: kernel.img
 
 bochs: boot
 	@mkdir -p log
 	bochs -f .bochsrc -q
 
-clean: clean-boot
+boot.img: bin/boot.bin
+	@cat bin/boot.bin > boot.img
+
+kernel.img: bin/boot.bin bin/kernel.bin
+	@cat bin/boot.bin bin/kernel.bin > kernel.img
+
+clean: clean-boot clean-kernel
+	@rm -rf kernel.img
 

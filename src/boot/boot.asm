@@ -195,7 +195,6 @@ _start:
   jmp code_selector:_start_pm    ; Long jump into 32-bit protect mode
 
 [bits 32]
-
 _start_pm:    ; Now we are in 32-bit protect mode
   ; Initialize registers in Protect Mode
   mov ax, data_selector
@@ -215,7 +214,6 @@ _start_pm:    ; Now we are in 32-bit protect mode
   mov ecx, 0x10000
   rep movsb
 
-  jmp $
   jmp code_selector:0x100000 ; Jump to C, never return
 
 
