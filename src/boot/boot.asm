@@ -12,13 +12,14 @@
   db (%1 >> 24) & 0xff
 %endmacro
 
+[bits 16]
 ;; ---------------------------------------------------------------------------
 ;; BootLoader for Constance.
 ;;
 ;; Load Kernel into memory, enable A20, load gdt, ldt
 ;;
 
-org 07c00h    ;; Load into 0x7c00, where bios read
+; org 07c00h    ;; Load into 0x7c00, where bios read, specified by ldscript
 jmp _start    ;; Just jump to _start which is the main process for bootloader
 
 
@@ -27,30 +28,59 @@ jmp _start    ;; Just jump to _start which is the main process for bootloader
 ;;
 
 _print_loading_msg:
-  mov ax, 03h
-  xor bh, bh
-  int 10h    ;; Get position of current cursor.
+  push es
+  mov ax, cs
+  mov es, ax
 
-  mov bx, 07h    ;; style of string
-  mov cx, 16h    ;; loading_msg contains totally 22 chars
+  mov ah, 0x3
+  xor bh, bh
+  int 0x10    ;; Get position of current cursor.
+
+  mov bl, 0x07    ;; style of string
+  mov bh, 0x0
+  mov cx, 0x16    ;; loading_msg contains totally 22 chars
   mov ax, loading_msg
   mov bp, ax    ;; es:bp refers to the string going to be print.
-  mov ax, 01301h    ;; ah = 13h, al = 01h
-  int 10h    ;; Print loading_msg
+  mov ax, 0x01301    ;; ah = 13h, al = 01h
+  int 0x10    ;; Print loading_msg
 
+  pop es
   ret
+
+
+;; ---------------------------------------------------------------------------
+;; Print msg Loading Finished
+;;
+
+_print_loaded_msg:
+  push es
+  mov ax, cs
+  mov es, ax
+
+  mov ah, 0x03
+  xor bh, bh
+  int 0x10    ;; Get position of current cursor.
+
+  mov bl, 0x07    ;; style of string
+  mov bh, 0x0
+  mov cx, 0x15    ;; loading_msg contains totally 22 chars
+  mov ax, loaded_msg
+  mov bp, ax    ;; es:bp refers to the string going to be print.
+  mov ax, 0x1301    ;; ah = 13h, al = 01h
+  int 0x10    ;; Print loading_msg
+  pop es
+  ret
+
 
 ;; ---------------------------------------------------------------------------
 ;; Read sector from disk driver into memory.
 ;;
-;; Load `cl` sectors which started from the number specified by `ax` into es:bx
+;; Load 1 sectors which started from the number specified by `ax` into es:bx
 ;;
 
 _read_sector:
   push bp
   mov bp, sp
-  sub esp, 2    ;; Place for amount of sector to load
-  mov byte [bp-2], cl    ;; cl = how many sector to load
   push bx
   mov bl, 18    ;; 18 sector in each track
   div bl    ;; ah = ax % bl, al = ax / bl
@@ -61,13 +91,12 @@ _read_sector:
   shr al, 1
   mov ch, al    ;; ch = cylinder = (sector_numer / 18) >> 1
   pop bx
-  mov dl, 0    ;;  drive set to 0
+  mov dl, 0    ;;  driver set to 0
   __go_on_reading:
-    mov ah, 2    ;; ah = 02h, int 13h -> read sector
-    mov al, byte [bp-2]    ;; al = how many sector to read
-    int 13h
+    mov ah, 0x02    ;; ah = 02h, int 13h -> read sector
+    mov al, 1    ;; al = how many sector to read
+    int 0x13
     jc __go_on_reading    ;; CF set to 1 if there is error, just read again
-  add esp, 2
   pop bp
   ret
 
@@ -78,7 +107,7 @@ _read_sector:
 _reset_fdc:
   xor ah, ah    ;; reset floppy driver controller
   xor dl, dl    ;; the first driver
-  int 13h
+  int 0x13
 
   or ah, ah    ;; test error code
   jnz _reset_fdc    ;; reset again if error
@@ -89,11 +118,11 @@ _reset_fdc:
 ;;
 
 _cls:
-  mov ax, 0600h
-  mov bx, 0700h
+  mov ax, 0x0600
+  mov bx, 0x0700
   mov cx, 0
-  mov dx, 0184h
-  int 10h
+  mov dx, 0x0184
+  int 0x10
   ret
 
 ;; ---------------------------------------------------------------------------
@@ -102,9 +131,9 @@ _cls:
 
 _enabled_a20:
   cli
-  in al, 92h
+  in al, 0x92
   or al, 00000010b
-  out 92h, al
+  out 0x92, al
   ret
 
 ;; ---------------------------------------------------------------------------
@@ -124,7 +153,7 @@ _load_gdt:
 
 _enable_pm:
   mov eax, cr0
-  or eax, 1h
+  or eax, 0x1
   mov cr0, eax
   ret
 
@@ -133,15 +162,21 @@ _enable_pm:
 ;;
 
 _load_kernel:
-  call _print_loading_msg
   call _reset_fdc
+  call _print_loading_msg
 
-  mov ax, 1000h
+  mov ax, 0x1000
   mov es, ax
   mov bx, 0
-  mov ax, si
-  mov cl, 128    ;; read 128 sectors, 64kb
-  call _read_sector
+  mov ax, 0
+  mov cx, 128    ;; read 128 sectors, 64kb
+  __read_loop:
+    call _read_sector
+    inc ax
+    add bx, 0x200
+    dec cx
+    jnz __read_loop
+  call _print_loaded_msg
   ret
 
 _init_protect_mode:
@@ -171,19 +206,21 @@ _start_pm:    ; Now we are in 32-bit protect mode
   mov gs, ax
 
   ; Update stack
-  mov esp, 90000h
+  mov esp, 0x90000
 
   ; Copy Kernel to 0x10000h
   cld    ; clear direction
-  mov esi, 10000h
-  mov edi, 100000h
-  mov ecx, 10000h
+  mov esi, 0x10000
+  mov edi, 0x100000
+  mov ecx, 0x10000
   rep movsb
 
-  jmp code_selector:100000h ; Jump to C, never return
+  jmp $
+  jmp code_selector:0x100000 ; Jump to C, never return
 
 
 loading_msg:    db "Loading Constance...", 13, 10
+loaded_msg:    db "Loaded Constance...", 13, 10
 
 gdt_start:
 gdt_null:    ; The mandatory null descriptior
