@@ -205,7 +205,7 @@ _start_pm:    ; Now we are in 32-bit protect mode
   mov gs, ax
 
   ; Update stack
-  mov esp, 0x90000
+  mov esp, 0x1000
 
   ; Copy Kernel to 0x10000h
   cld    ; clear direction
