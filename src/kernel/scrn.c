@@ -31,7 +31,6 @@ void cls(void) {
     for (i=0; i<25; ++i) {
         memsetw(textmemptr + i * 80, blank, 80);
     }
-
     csr_x = 0;
     csr_y = 0;
     move_csr();
@@ -86,4 +85,3 @@ void init_video(void) {
     textmemptr = (unsigned short *) 0xB8000;
     cls();
 }
-
