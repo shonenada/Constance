@@ -3,17 +3,17 @@
 
 /* string.c */
 void *memcpy(void*, const void*, size_t);
-void *memset(void *, char, size_t);
-unsigned short *memsetw(unsigned short*, unsigned short, size_t);
+void *memset(void*, char, size_t);
+ushort *memsetw(ushort*, ushort, size_t);
 size_t strlen(char*);
-unsigned char inportb(unsigned short _port);
-void outportb(unsigned short, unsigned char);
+uchar inportb(ushort _port);
+void outportb(ushort, uchar);
 
 /* scrn.c */
 void cls(void);
 void putch(char);
 void puts(char*);
-void settextcolor(unsigned char, unsigned char);
+void settextcolor(uchar, uchar);
 void init_video(void);
 
 #endif

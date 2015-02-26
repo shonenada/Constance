@@ -1,59 +1,59 @@
 #include <const.h>
+#include <structs.h>
 #include <system.h>
 
 // Global variable for vga memory (0xb8000)
-unsigned short *vgamemptr;
+extern struct vchar vgamemptr[25][80];
 // Attributes of background color, foreground color
 int attrib = 0x0F;
 // x and y cursor coordinates;
 int csr_x = 0, csr_y = 0;
 
-// Scroll screen
-void scroll(void) {
-    unsigned blank, temp;
-    blank = (' ' | (attrib << 8));    // Space, set background as well.
-
-    // Max row number is 25, we need to scroll up
-    if (csr_y >= 25) {
-        // Move current cursor to the top of screen.
-        temp = csr_y - 25 + 1;
-        memcpy (vgamemptr, vgamemptr + temp * 80, (25 - temp) * 80 * 2);
-        memsetw (vgamemptr + (25 - temp) * 80, blank, 80);
-        csr_y =  25 - 1;
-    }
-}
-
-void move_csr(void) {
-    unsigned temp;
-    temp = csr_y * 80 + csr_x;
+void flush_csr(void) {
+    uint pos = csr_y * 80 + csr_x;
     outportb(0x3D4, 14);
-    outportb(0x3D5, temp >> 8);
+    outportb(0x3D5, pos >> 8);
     outportb(0x3D4, 15);
-    outportb(0x3D5, temp);
+    outportb(0x3D5, pos);
 }
 
 // Clean the screen
 void cls(void) {
-    unsigned blank = (' ' | (attrib << 8));
-    memsetw(vgamemptr, blank, 80*25);
+    memsetw((ushort*) vgamemptr, SCR_BLANK, 80*25);
     csr_x = 0;
     csr_y = 0;
-    move_csr();
+    flush_csr();
+}
+
+// Scroll screen
+void scroll(void) {
+    // Max row number is 25, we need to scroll up
+    if (csr_y >= 25) {
+        // Move current cursor to the top of screen.
+        uint pos = csr_y - 25 + 1;
+        memcpy(vgamemptr, &vgamemptr[pos][0], (25 - pos) * 80 * SIZE_VCHAR);
+        memsetw((ushort*)&vgamemptr[25-pos][0], SCR_BLANK, 80);
+        csr_y =  25 - 1;
+    }
 }
 
 // Put a char on the screen
 void putch(char c) {
-    unsigned short *where;
-    unsigned att = attrib << 8;    // background color
-
     // Handle for special char.
     // backspace
-    if (c == 0x08) {
-        if (csr_x != 0)
+    if (c == '\b') {
+        if (csr_x > 0) {
+            vgamemptr[csr_y][csr_x].v_char = ' ';
             csr_x--;
+        }
+        else if (csr_x == 0){
+            if (csr_y > 0) csr_y--;
+            csr_x = 79;
+            vgamemptr[csr_y][csr_x].v_char = ' ';
+        }
     }
     // tab
-    else if (c == 0x09) {
+    else if (c == '\t') {
        csr_x = (csr_x + 8) & ~(8 - 1);
     }
     else if (c == '\r') {
@@ -65,8 +65,7 @@ void putch(char c) {
     }
     // printable
     else if (c >= ' ') {
-        where = vgamemptr + (csr_y * 80 + csr_x);
-        *where = c | att;
+        vgamemptr[csr_y][csr_x].v_char = c;
         csr_x++;
     }
     if (csr_x >= 80) {
@@ -74,7 +73,7 @@ void putch(char c) {
         csr_y++;
     }
     scroll();
-    move_csr();
+    flush_csr();
 }
 
 // Put a string on the screen
@@ -85,11 +84,10 @@ void puts(char *text) {
     }
 }
 
-void settextcolor(unsigned char forecolor, unsigned char backcolor) {
+void settextcolor(uchar forecolor, uchar backcolor) {
     attrib = (backcolor << 4) | (forecolor & 0x0f);
 }
 
 void init_video(void) {
-    vgamemptr = (unsigned short *) 0xb8000;
     cls();
 }

@@ -1,6 +1,7 @@
 ENTRY(kmain)
 SECTIONS {
     __bios__ = 0xa0000;
+    vgamemptr = 0xb8000;
     .text 0x100000 : {
         __kbegin__ = .;
         __code__ = .;
