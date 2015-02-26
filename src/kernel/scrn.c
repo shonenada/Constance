@@ -1,3 +1,4 @@
+#include <const.h>
 #include <system.h>
 
 // Global variable for vga memory (0xb8000)
@@ -41,7 +42,7 @@ void cls(void) {
 }
 
 // Put a char on the screen
-void putch(unsigned char c) {
+void putch(char c) {
     unsigned short *where;
     unsigned att = attrib << 8;    // background color
 
@@ -77,9 +78,9 @@ void putch(unsigned char c) {
 }
 
 // Put a string on the screen
-void puts(unsigned char *text) {
+void puts(char *text) {
     int i;
-    for (i=0; i<strlen(text); i++) {
+    for (i=0; i<strlen((char *)text); i++) {
         putch(text[i]);
     }
 }

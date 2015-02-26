@@ -1,3 +1,4 @@
+#include <const.h>
 #include <system.h>
 
 void init() {

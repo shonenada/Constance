@@ -1,3 +1,4 @@
+#include <const.h>
 #include <system.h>
 
 void *memcpy(void *dest, const void *src, size_t count) {
@@ -19,8 +20,8 @@ unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count) 
     return dest;
 }
 
-size_t strlen(const char *str) {
-    char *sp; 
+size_t strlen(char *str) {
+    char *sp;
     for (sp=str; *sp != '\0'; ++sp);
     return (size_t) (sp - str);
 }
