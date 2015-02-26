@@ -14,15 +14,15 @@ void *memset(void *dest, char val, size_t count) {
 }
 
 unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count) {
-    unsigned short *dp = dest;
+    unsigned short *dp = (unsigned short *)dest;
     for (;count>0; count--) *dp++ = val;
     return dest;
 }
 
 size_t strlen(const char *str) {
     char *sp; 
-    for (sp=(char*)str; *sp!='\0'; ++sp);
-    return sp - str;
+    for (sp=str; *sp != '\0'; ++sp);
+    return (size_t) (sp - str);
 }
 
 unsigned char inportb(unsigned short _port) {

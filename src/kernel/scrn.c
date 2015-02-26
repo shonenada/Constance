@@ -1,7 +1,7 @@
 #include <system.h>
 
 // Global variable for vga memory (0xb8000)
-unsigned char *vgamemptr;
+unsigned short *vgamemptr;
 // Attributes of background color, foreground color
 int attrib = 0x0F;
 // x and y cursor coordinates;
@@ -10,7 +10,7 @@ int csr_x = 0, csr_y = 0;
 // Scroll screen
 void scroll(void) {
     unsigned blank, temp;
-    blank = 0x20 | (attrib << 8);    // Space, set background as well.
+    blank = (' ' | (attrib << 8));    // Space, set background as well.
 
     // Max row number is 25, we need to scroll up
     if (csr_y >= 25) {
@@ -33,12 +33,8 @@ void move_csr(void) {
 
 // Clean the screen
 void cls(void) {
-    int i;
-    unsigned blank;
-    blank = 0x20 | (attrib << 8);
-    for (i=0; i<25; ++i) {
-        memsetw(vgamemptr + i * 80, blank, 80);
-    }
+    unsigned blank = (' ' | (attrib << 8));
+    memsetw(vgamemptr, blank, 80*25);
     csr_x = 0;
     csr_y = 0;
     move_csr();

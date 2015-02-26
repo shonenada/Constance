@@ -6,9 +6,6 @@ void init() {
 
 void kmain() {
     init();
-    putch('H');
-    putch('\r');
-    putch('\n');
     puts("Hello Constance!\n");
     for(;;) ;
 }
