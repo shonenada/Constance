@@ -6,7 +6,9 @@ void init() {
 
 void kmain() {
     init();
-    char * video_memory = (char *) 0xb8000;
-    *video_memory = 'H';
-    for(;;) {}
+    putch('H');
+    putch('\r');
+    putch('\n');
+    puts("Hello Constance!\n");
+    for(;;) ;
 }
