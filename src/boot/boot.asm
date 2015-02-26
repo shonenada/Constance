@@ -1,3 +1,4 @@
+align 4
 ;; ---------------------------------------------------------------------------
 ;; Macro for GDT struct
 ;; GlobalDescriptor Base, Limit, Attr
@@ -75,29 +76,29 @@ _print_loaded_msg:
 ;; ---------------------------------------------------------------------------
 ;; Read sector from disk driver into memory.
 ;;
-;; Load 1 sectors which started from the number specified by `ax` into es:bx
+;; Load 1 sectors which started from the number specified by `si` into es:bx
+;; `bx` specified by `di`
 ;;
 
 _read_sector:
-  push bp
-  mov bp, sp
   push bx
-  mov bl, 18    ;; 18 sector in each track
-  div bl    ;; ah = ax % bl, al = ax / bl
+  mov ax, si
+  mov cl, 18    ;; 18 sector in each track
+  div cl    ;; ah = ax % cl, al = ax / cl
   inc ah
   mov cl, ah    ;; cl = sector = (sector_numer % 18) + 1
   mov dh, al
   and dh, 1    ;; dh = head = (sector_numer / 18) & 1
   shr al, 1
   mov ch, al    ;; ch = cylinder = (sector_numer / 18) >> 1
-  pop bx
   mov dl, 0    ;;  driver set to 0
+  mov bx, di    ;; buffer address
   __go_on_reading:
     mov ah, 0x02    ;; ah = 02h, int 13h -> read sector
     mov al, 1    ;; al = how many sector to read
     int 0x13
     jc __go_on_reading    ;; CF set to 1 if there is error, just read again
-  pop bp
+  pop bx
   ret
 
 ;; ---------------------------------------------------------------------------
@@ -105,8 +106,8 @@ _read_sector:
 ;;
 
 _reset_fdc:
-  xor ah, ah    ;; reset floppy driver controller
-  xor dl, dl    ;; the first driver
+  mov ah, 0    ;; reset floppy driver controller
+  mov dl, 0;; the first driver
   int 0x13
 
   or ah, ah    ;; test error code
@@ -167,13 +168,13 @@ _load_kernel:
 
   mov ax, 0x1000
   mov es, ax
-  mov bx, 0
-  mov ax, 0
+  mov di, 0
+  mov si, 1
   mov cx, 128    ;; read 128 sectors, 64kb
   __read_loop:
     call _read_sector
-    inc ax
-    add bx, 0x200
+    inc si
+    add di, 0x200
     dec cx
     jnz __read_loop
   call _print_loaded_msg
@@ -187,9 +188,10 @@ _init_protect_mode:
 
 [global _start]
 _start:
-  mov ax, cs
+  xor ax, ax
   mov ds, ax
-  mov es, ax
+  mov ss, ax
+  mov sp, 0x2000
   call _load_kernel
   call _init_protect_mode
   jmp code_selector:_start_pm    ; Long jump into 32-bit protect mode

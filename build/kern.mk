@@ -11,8 +11,8 @@ bin/entry.o: src/kernel/entry.asm
 	@mkdir -p bin
 	nasm src/kernel/entry.asm -f elf -o bin/entry.o
 
-bin/kernel.elf: bin/entry.o bin/kernel/main.o bin/kernel/scrn.o
-	ld $< -o $@ -e -c -T build/kern.ld -m elf_i386
+bin/kernel.elf: bin/entry.o bin/kernel/main.o
+	ld $< -o $@ -T build/kern.ld -m elf_i386
 
 bin/kernel.bin: bin/kernel.elf
 	objcopy -R .pdr -R .comment -R .note -S -O binary $< $@

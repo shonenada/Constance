@@ -14,6 +14,10 @@ bochs: kernel.img
 	@mkdir -p log
 	bochs -f .bochsrc -q
 
+debug: kernel.img
+	@mkdir -p log
+	bochs-dbg -f .bochsrc -q
+
 boot.img: bin/boot.bin
 	@cat bin/boot.bin > boot.img
 
