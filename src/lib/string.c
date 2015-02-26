@@ -1,5 +1,3 @@
-#include <const.h>
-#include <structs.h>
 #include <system.h>
 
 void *memcpy(void *dest, const void *src, size_t count) {

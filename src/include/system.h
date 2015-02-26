@@ -1,6 +1,9 @@
 #ifndef __SYSTEM_H
 #define __SYSTEM_H
 
+#include <const.h>
+#include <structs.h>
+
 /* string.c */
 void *memcpy(void*, const void*, size_t);
 void *memset(void*, char, size_t);
@@ -14,6 +17,10 @@ void cls(void);
 void putch(char);
 void puts(char*);
 void settextcolor(uchar, uchar);
-void init_video(void);
+void video_init(void);
+
+/* gdt.c */
+void set_gdt(struct gdt_entry*, uint, uint, uint, uint);
+void gdt_init();
 
 #endif

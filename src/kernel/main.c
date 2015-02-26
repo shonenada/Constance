@@ -1,11 +1,11 @@
-#include <const.h>
 #include <system.h>
 
 void init() {
-    init_video();
 }
 
 void kmain() {
+    gdt_init();
+    video_init();
     init();
     puts("Hello Constance!\n");
     for(;;) ;

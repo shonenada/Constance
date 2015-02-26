@@ -1,5 +1,3 @@
-#include <const.h>
-#include <structs.h>
 #include <system.h>
 
 // Global variable for vga memory (0xb8000)
@@ -88,6 +86,6 @@ void settextcolor(uchar forecolor, uchar backcolor) {
     attrib = (backcolor << 4) | (forecolor & 0x0f);
 }
 
-void init_video(void) {
+void video_init(void) {
     cls();
 }
