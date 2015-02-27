@@ -69,15 +69,14 @@ void isrs_init() {
 // IRQ 0 to 15 are mapped to IDT[32] to IDT[47]
 void irq_remap(void) {
     outportb(MASTER_PIC_PORT, 0x11);
-    outportb(MASTER_PIC_PORT + 1, 0x20);
-    outportb(MASTER_PIC_PORT + 1, 0x04);
-    outportb(MASTER_PIC_PORT + 1, 0x01);
-    outportb(MASTER_PIC_PORT + 1, 0x00);
-
     outportb(SLAVE_PIC_PORT, 0x11);
+    outportb(MASTER_PIC_PORT + 1, 0x20);
     outportb(SLAVE_PIC_PORT + 1, 0x28);
+    outportb(MASTER_PIC_PORT + 1, 0x04);
     outportb(SLAVE_PIC_PORT + 1, 0x02);
+    outportb(MASTER_PIC_PORT + 1, 0x01);
     outportb(SLAVE_PIC_PORT + 1, 0x01);
+    outportb(MASTER_PIC_PORT + 1, 0x00);
     outportb(SLAVE_PIC_PORT + 1, 0x00);
 }
 
@@ -98,10 +97,24 @@ void idt_init() {
 
 void irq_init() {
     irq_remap();
-    int i;
-    for (i=0;i<32;i++) {
-        set_trap_gate(i + 32, (uint) irq_routines[i]);
-    }
+    set_itr_gate(32, (uint) irq0);
+    set_itr_gate(33, (uint) irq1);
+    /**
+    set_itr_gate(34, (uint) irq2);
+    set_itr_gate(35, (uint) irq3);
+    set_itr_gate(36, (uint) irq4);
+    set_itr_gate(37, (uint) irq5);
+    set_itr_gate(38, (uint) irq6);
+    set_itr_gate(39, (uint) irq7);
+    set_itr_gate(40, (uint) irq8);
+    set_itr_gate(41, (uint) irq9);
+    set_itr_gate(42, (uint) irq10);
+    set_itr_gate(43, (uint) irq11);
+    set_itr_gate(44, (uint) irq12);
+    set_itr_gate(45, (uint) irq13);
+    set_itr_gate(46, (uint) irq14);
+    set_itr_gate(47, (uint) irq15);
+    **/
 }
 
 // Trap/Interrupt Handler

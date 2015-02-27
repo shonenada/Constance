@@ -95,4 +95,6 @@ typedef unsigned short ushort;
 #define MASTER_PIC_PORT 0x20
 #define SLAVE_PIC_PORT 0xA0
 
+#define TIMER_HZ 100
+
 #endif
