@@ -9,5 +9,5 @@ void kmain() {
     isrs_init();
     video_init();
     puts("Hello Constance!\n");
-    for(;;) ;
+    for(;;);
 }

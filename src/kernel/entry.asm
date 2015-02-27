@@ -274,7 +274,7 @@ isr31:
 ;;  calls fault handler, finally restore stack
 extern fault_handler    ;; from C
 isr_common_hdl:
-  pusha    ;; push eip, cs, ss, etc.
+  pusha    ;; push eax, ecx, edx, ebx, esp, ebp, esi, edi
   push ds
   push es
   push fs
@@ -296,5 +296,147 @@ isr_common_hdl:
   pop es
   pop ds
   popa
-  add esp, 8    ;; Cleans up pushed error code, isr number
+  add esp, 8    ;; Cleans up pushed error code, isr number, cs, eip, eflags, ss, esp
+  iret
+
+
+;; IRQs
+[global irq0]
+[global irq1]
+[global irq2]
+[global irq3]
+[global irq4]
+[global irq5]
+[global irq6]
+[global irq7]
+[global irq8]
+[global irq9]
+[global irq10]
+[global irq11]
+[global irq12]
+[global irq13]
+[global irq14]
+[global irq15]
+
+irq0:
+  cli
+  push 0
+  push 32
+  jmp irq_common_hdl
+
+irq1:
+  cli
+  push 0
+  push 33
+  jmp irq_common_hdl
+
+irq2:
+  cli
+  push 0
+  push 34
+  jmp irq_common_hdl
+
+irq3:
+  cli
+  push 0
+  push 35
+  jmp irq_common_hdl
+
+irq4:
+  cli
+  push 0
+  push 36
+  jmp irq_common_hdl
+
+irq5:
+  cli
+  push 0
+  push 37
+  jmp irq_common_hdl
+
+irq6:
+  cli
+  push 0
+  push 38
+  jmp irq_common_hdl
+
+irq7:
+  cli
+  push 0
+  push 39
+  jmp irq_common_hdl
+
+irq8:
+  cli
+  push 0
+  push 40
+  jmp irq_common_hdl
+
+irq9:
+  cli
+  push 0
+  push 41
+  jmp irq_common_hdl
+
+irq10:
+  cli
+  push 0
+  push 42
+  jmp irq_common_hdl
+
+irq11:
+  cli
+  push 0
+  push 43
+  jmp irq_common_hdl
+
+irq12:
+  cli
+  push 0
+  push 44
+  jmp irq_common_hdl
+
+irq13:
+  cli
+  push 0
+  push 45
+  jmp irq_common_hdl
+
+irq14:
+  cli
+  push 0
+  push 46
+  jmp irq_common_hdl
+
+irq15:
+  cli
+  push 0
+  push 47
+  jmp irq_common_hdl
+
+
+[extern irq_handler]
+
+irq_common_hdl:
+  pusha
+  push ds
+  push es
+  push fs
+  push gs
+  mov ax, 0x10
+  mov ds, ax
+  mov es, ax
+  mov fs, ax
+  mov gs, ax
+  mov eax, esp
+  push eax
+  mov eax, irq_handler
+  call eax
+  pop eax
+  pop gs
+  pop fs
+  pop es
+  pop ds
+  popa
+  add esp, 8
   iret

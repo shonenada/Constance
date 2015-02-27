@@ -92,4 +92,7 @@ typedef unsigned short ushort;
 #define RING2 0x2
 #define RING3 0x3
 
+#define MASTER_PIC_PORT 0x20
+#define SLAVE_PIC_PORT 0xA0
+
 #endif
