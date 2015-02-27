@@ -37,7 +37,7 @@ typedef unsigned short ushort;
 
 
 /* GDT */
-#define GDT_SIZE 4
+#define GDT_SIZE 5
 
 // Descriptor type bits
 #define SEG_DATA 0b0000    // Data segment

@@ -1,6 +1,6 @@
 #include <system.h>
 
-struct gdt_entry gdt[GDT_SIZE + 1];
+struct gdt_entry gdt[GDT_SIZE];
 struct gdt_ptr gp;
 
 void gdt_set(struct gdt_entry *entry, uint base, uint limit, uint dpl, uint type) {
@@ -24,9 +24,9 @@ void gdt_set(struct gdt_entry *entry, uint base, uint limit, uint dpl, uint type
 
 void gdt_init() {
     gdt_set(&gdt[0], 0, 0, 0, 0);    // Null GDT
-    gdt_set(&gdt[1], 0, 0xFFFFFFFF, RING0, SEG_CODE_EXRDCA);
+    gdt_set(&gdt[1], 0, 0xFFFFFFFF, RING0, SEG_CODE_EXRD);
     gdt_set(&gdt[2], 0, 0xFFFFFFFF, RING0, SEG_DATA_RW);
-    gdt_set(&gdt[3], 0, 0xFFFFFFFF, RING3, SEG_CODE_EXRDCA);
+    gdt_set(&gdt[3], 0, 0xFFFFFFFF, RING3, SEG_CODE_EXRD);
     gdt_set(&gdt[4], 0, 0xFFFFFFFF, RING3, SEG_DATA_RW);
 
     gp.base = (uint) &gdt;
