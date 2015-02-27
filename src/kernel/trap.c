@@ -70,6 +70,8 @@ void idt_init() {
     memset(&idt, 0, SIZE_IDT_ENTRY);
 
     isrs_init();
+    
+    __asm__ __volatile__ ("lidt %0" :: "m"(idt_p));
 }
 
 // Trap/Interrupt Handler
