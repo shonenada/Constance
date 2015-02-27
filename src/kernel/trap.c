@@ -99,10 +99,10 @@ void irq_init() {
     irq_remap();
     set_itr_gate(32, (uint) irq0);
     set_itr_gate(33, (uint) irq1);
-    /**
     set_itr_gate(34, (uint) irq2);
     set_itr_gate(35, (uint) irq3);
     set_itr_gate(36, (uint) irq4);
+    /**
     set_itr_gate(37, (uint) irq5);
     set_itr_gate(38, (uint) irq6);
     set_itr_gate(39, (uint) irq7);
@@ -119,23 +119,23 @@ void irq_init() {
 
 // Trap/Interrupt Handler
 // Just print some information
-void fault_handler(struct regs* rgs) {
+void int_handler(struct regs* rgs) {
+    void (*handler) (struct regs *r);
+
     if (rgs->int_no < 32) {
         puts(exception_msg[rgs->int_no]);
         puts(" Exception! System Halted! \n");
         for(;;);
     }
-}
-
-void irq_handler(struct regs* rgs) {
-    void (*handler) (struct regs *r);
-    handler = irq_routines[rgs->int_no - 32];
-    if (handler) {
-        handler(rgs);
+    if (rgs->int_no >= 32) {
+        handler = irq_routines[rgs->int_no - 32];
+        if (handler) {
+            handler(rgs);
+        }
+        if (rgs->int_no >= 40) {
+            outportb(SLAVE_PIC_PORT, 0x20);     // send EOI to slave PIC
+        }
+        outportb(MASTER_PIC_PORT, 0x20);     // send EOI to master PIC
     }
-    if (rgs->int_no >= 40) {
-        outportb(SLAVE_PIC_PORT, 0x20);     // send EOI to slave PIC
-    }
-    outportb(MASTER_PIC_PORT, 0x20);     // send EOI to master PIC
 }
 
