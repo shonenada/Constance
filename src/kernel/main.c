@@ -11,6 +11,7 @@ void kmain() {
     isrs_init();
     irq_init();
     timer_init();
+    keyboard_init();
 
     __asm__ __volatile__ ("sti");
 
