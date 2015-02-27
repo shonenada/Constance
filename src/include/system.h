@@ -40,5 +40,6 @@ void fault_handler(struct regs*);
 void irq_handler(struct regs*);
 
 void timer_init();
+void keyboard_init();
 
 #endif
