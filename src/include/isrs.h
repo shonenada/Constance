@@ -1,3 +1,6 @@
+#ifndef __ISRS_H
+#define __ISRS_H
+
 extern void isr0();
 extern void isr1();
 extern void isr2();
@@ -65,3 +68,5 @@ char *exception_msg[] = {
     "Reserved",
     "Reserved",
 };
+
+#endif
