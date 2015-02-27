@@ -20,7 +20,18 @@ void settextcolor(uchar, uchar);
 void video_init(void);
 
 /* gdt.c */
-void set_gdt(struct gdt_entry*, uint, uint, uint, uint);
+void gdt_set(struct gdt_entry*, uint, uint, uint, uint);
+extern void gdt_flush();
 void gdt_init();
+
+/* trap.c */
+void idt_set(int num, uint, ushort, uchar, uchar);
+inline void set_itr_gate(int num, uint);
+inline void set_trap_gate(int num, uint);
+inline void set_task_gate(int num, uint);
+void isrs_init();
+void idt_init();
+
+void fault_handler(struct regs*);
 
 #endif

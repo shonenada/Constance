@@ -3,9 +3,7 @@
 struct gdt_entry gdt[GDT_SIZE + 1];
 struct gdt_ptr gp;
 
-extern void gdt_flush();
-
-void set_gdt(struct gdt_entry *entry, uint base, uint limit, uint dpl, uint type) {
+void gdt_set(struct gdt_entry *entry, uint base, uint limit, uint dpl, uint type) {
     entry->base_low = base & 0xFFFF;
     entry->base_mid = (base >> 16) & 0xFF;
     entry->base_high = (base >> 24) & 0xFF;
@@ -25,12 +23,14 @@ void set_gdt(struct gdt_entry *entry, uint base, uint limit, uint dpl, uint type
 }
 
 void gdt_init() {
-    set_gdt(&gdt[0], 0, 0, 0, 0);    // Null GDT
-    set_gdt(&gdt[1], 0, 0xFFFFFFFF, RING0, SEG_CODE_EXRDCA);
-    set_gdt(&gdt[2], 0, 0xFFFFFFFF, RING0, SEG_DATA_RW);
-    set_gdt(&gdt[3], 0, 0xFFFFFFFF, RING3, SEG_CODE_EXRDCA);
-    set_gdt(&gdt[4], 0, 0xFFFFFFFF, RING3, SEG_DATA_RW);
+    gdt_set(&gdt[0], 0, 0, 0, 0);    // Null GDT
+    gdt_set(&gdt[1], 0, 0xFFFFFFFF, RING0, SEG_CODE_EXRDCA);
+    gdt_set(&gdt[2], 0, 0xFFFFFFFF, RING0, SEG_DATA_RW);
+    gdt_set(&gdt[3], 0, 0xFFFFFFFF, RING3, SEG_CODE_EXRDCA);
+    gdt_set(&gdt[4], 0, 0xFFFFFFFF, RING3, SEG_DATA_RW);
+
+    gp.base = (uint) &gdt;
+    gp.limit = (SIZE_GDT_ENTRY * GDT_SIZE) - 1;
 
     gdt_flush();    // flush gdt, defined in entry.asm
-
 }

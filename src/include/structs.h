@@ -15,7 +15,7 @@ struct gdt_entry {
     uint base_mid:8;    // Base address of segment, middle 8 bits
     uint attr_type:4;     // The type of segment
     uint attr_s:1;    // s = 1: data/code segment descriptor; s = 0: system segment descriptor
-    uint attr_dpl:2;    // Privilege of segment, 0 ~ 3
+    uint attr_dpl:2;    // Descriptor Privilege Level of segment, RING0 ~ RING3
     uint attr_present:1;    // Whether segment present in memory
     uint limit_high:4;    // Limit of segment, high 4 bits
     uint attr_avl:1;    // Reserved
@@ -31,5 +31,30 @@ struct gdt_ptr {
     uint base;
 } __attribute__ ((packed));
 #define SIZE_GDT_PTR sizeof(struct gdt_ptr)
+
+struct idt_entry {
+    uint base_low:16;    // base address of ISR (Interrupt Service Routine) 
+    uint selector:16;     // segment selector
+    uint zero:8;    // always 0
+    uint attr_type:4;     // gate type
+    uint attr_s:1;    // s = 0 for interrupt gates; must be 0
+    uint attr_dpl:2;    // Descriptor Privilege Level
+    uint attr_present:1;    // present
+    uint base_high:16;    // higher part of base address
+};
+#define SIZE_IDT_ENTRY sizeof(struct idt_entry)
+
+struct idt_ptr {
+    ushort limit;
+    uint base;
+} __attribute__ ((packed));
+
+struct regs {
+    uint gs, fs, es, ds;
+    uint edi, esi, ebp, esp, ebx, edx, ecx, eax;    // pushed by `pusha`
+    uint int_no, err_code;
+    uint eip, cs, eflags, useresp, ss;    // pushed by processor 
+};
+#define SIZE_REGS sizeof(struct regs)
 
 #endif
