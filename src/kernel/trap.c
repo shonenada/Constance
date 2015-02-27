@@ -68,9 +68,6 @@ void idt_init() {
     idt_p.limit = (SIZE_IDT_ENTRY * 256) - 1;
     idt_p.base = (uint) &idt;
     memset(&idt, 0, SIZE_IDT_ENTRY);
-
-    isrs_init();
-    
     __asm__ __volatile__ ("lidt %0" :: "m"(idt_p));
 }
 
