@@ -270,30 +270,31 @@ isr31:
   push byte 31
   jmp isr_common_hdl
 
-extern fault_handler    ;; from C
-
 ;; ISR stub, saves processor state, sets up for kernel mode segments,
 ;;  calls fault handler, finally restore stack
+extern fault_handler    ;; from C
 isr_common_hdl:
-  pusha
+  pusha    ;; push eip, cs, ss, etc.
   push ds
   push es
   push fs
   push gs
+  ;; saved current state
   mov ax, 0x10    ;;  0x10 -> Kernel Data Segment
   mov ds, ax
   mov es, ax
   mov fs, ax
   mov gs, ax
   mov eax, esp    ;; Push up stack
-  push eax
+  push eax    ;; Push esp, which used by fault_handler
   mov eax, fault_handler
   call eax
+  ;; restore state
   pop eax
   pop gs
   pop fs
   pop es
   pop ds
   popa
-  add esp, 8    ;; Cleans up pushed error code, isr number, pop CS, EIP, EFLAGS, SS, ESP
+  add esp, 8    ;; Cleans up pushed error code, isr number
   iret
