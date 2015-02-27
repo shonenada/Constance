@@ -2,9 +2,9 @@
 #define __STRUCTS_H
 
 struct vchar {
-    uint v_char:8;
-    uchar v_fgcolor:4;
-    uchar v_bgcolor:4;
+    short v_char:8;
+    char v_fgcolor:4;
+    char v_bgcolor:4;
 };
 #define SIZE_VCHAR sizeof(struct vchar)
 
