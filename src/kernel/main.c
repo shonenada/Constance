@@ -24,5 +24,7 @@ void kmain() {
     irq_init();
     puts("Finished initializing Interrupt Request\n");
 
+    __asm__ __volatile__ ("sti");
+
     for(;;);
 }

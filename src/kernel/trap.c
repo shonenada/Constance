@@ -27,16 +27,16 @@ void set_trap_gate(int num, uint base) {
 }
 
 void set_task_gate(int num, uint base) {
-    idt_set(num, base, KERN_CS, STS_TYPE_IG32, RING3);
+    idt_set(num, base, KERN_CS, STS_TYPE_TG32, RING3);
 }
 
 void isrs_init() {
     set_trap_gate(0, (uint) isr0);
     set_trap_gate(1, (uint) isr1);
     set_trap_gate(2, (uint) isr2);
-    set_itr_gate(3, (uint) isr3);
-    set_itr_gate(4, (uint) isr4);
-    set_itr_gate(5, (uint) isr5);
+    set_task_gate(3, (uint) isr3);
+    set_task_gate(4, (uint) isr4);
+    set_task_gate(5, (uint) isr5);
     set_trap_gate(6, (uint) isr6);
     set_trap_gate(7, (uint) isr7);
     set_trap_gate(8, (uint) isr8);
@@ -75,8 +75,8 @@ void irq_remap(void) {
     outportb(MASTER_PIC_PORT + 1, 0x00);
 
     outportb(SLAVE_PIC_PORT, 0x11);
-    outportb(SLAVE_PIC_PORT + 1, 0x20);
-    outportb(SLAVE_PIC_PORT + 1, 0x04);
+    outportb(SLAVE_PIC_PORT + 1, 0x28);
+    outportb(SLAVE_PIC_PORT + 1, 0x02);
     outportb(SLAVE_PIC_PORT + 1, 0x01);
     outportb(SLAVE_PIC_PORT + 1, 0x00);
 }
@@ -109,7 +109,7 @@ void irq_init() {
 void fault_handler(struct regs* rgs) {
     if (rgs->int_no < 32) {
         puts(exception_msg[rgs->int_no]);
-        puts("Exception! System Halted! \n");
+        puts(" Exception! System Halted! \n");
         for(;;);
     }
 }
