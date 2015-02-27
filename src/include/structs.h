@@ -23,7 +23,7 @@ struct gdt_entry {
     uint attr_db:1;    // Operand size (0 -> 16-bit, 1 -> 32-bit)
     uint attr_g:1;    // Granularity (0 -> 1B, 1 -> 4KB)
     uint base_high:8;    // High 8 bits of segment base address
-};
+} __attribute__ ((packed));
 #define SIZE_GDT_ENTRY sizeof(struct gdt_entry)
 
 struct gdt_ptr {
@@ -41,7 +41,7 @@ struct idt_entry {
     uint attr_dpl:2;    // Descriptor Privilege Level
     uint attr_present:1;    // present
     uint base_high:16;    // higher part of base address
-};
+} __attribute__ ((packed));
 #define SIZE_IDT_ENTRY sizeof(struct idt_entry)
 
 struct idt_ptr {

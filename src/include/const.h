@@ -37,7 +37,7 @@ typedef unsigned short ushort;
 
 
 /* GDT */
-#define GDT_SIZE 4
+#define GDT_SIZE 5
 
 // Descriptor type bits
 #define SEG_DATA 0b0000    // Data segment
@@ -94,5 +94,7 @@ typedef unsigned short ushort;
 
 #define MASTER_PIC_PORT 0x20
 #define SLAVE_PIC_PORT 0xA0
+
+#define TIMER_HZ 100
 
 #endif

@@ -39,4 +39,6 @@ void irq_init();
 void fault_handler(struct regs*);
 void irq_handler(struct regs*);
 
+void timer_init();
+
 #endif

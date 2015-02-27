@@ -1,6 +1,6 @@
 #include <system.h>
 
-// Global variable for vga memory (0xb8000)
+// Global variable for vga memory (0xb8000), set in kern.ld
 extern struct vchar vgamemptr[25][80];
 // Attributes of background color, foreground color
 int attrib = 0x0F;
