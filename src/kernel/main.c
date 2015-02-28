@@ -4,14 +4,14 @@ void init() {
 }
 
 void kmain() {
-    video_init();
-    puts("Hello Constance!\n");
     gdt_init();
     idt_init();
+    video_init();
     timer_init();
     keyboard_init();
-
     __asm__ __volatile__ ("sti");
+
+    puts("Hello Constance!\n");
 
     for(;;);
 }

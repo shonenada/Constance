@@ -1,10 +1,45 @@
 #include <system.h>
-#include <isrs.h>
-#include <irqs.h>
 
 extern uint hwint[256];
 struct idt_entry idt[256];    // must be 256
 struct idt_ptr idt_p;
+
+void *irq_routines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+char *exception_msg[] = {
+    "Division By Zero",
+    "Debug",
+    "No Maskable Interrupt",
+    "Breakpoint",
+    "Overflow",
+    "Out of Bounds",
+    "Invalid Operand Code",
+    "No Coprocessor",
+    "Double Fault",
+    "Coprocessor Segment Overrun",
+    "Bad TTS",
+    "Segment Not Present",
+    "Stack Fault",
+    "General Protection Fault",
+    "Page Fault",
+    "Unknown Interrupt",
+    "Coprocessor Fault",
+    "Alignment Check",
+    "Machine Check",
+    "SIMD Floating-Point",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+};
 
 void idt_set(int num, uint base, ushort selector, uchar type, uchar dpl) {
     idt[num].base_low = base & 0xFFFF;
@@ -31,16 +66,6 @@ void set_task_gate(int num, uint base) {
     idt_set(num, base, KERN_CS, STS_TYPE_TG32, RING3);
 }
 
-void isrs_init() {
-    int i;
-    for (i=0;i<32;i++)
-        set_trap_gate(i, hwint[i]);
-    set_task_gate(3, hwint[3]);
-    set_task_gate(4, hwint[4]);
-    set_task_gate(5, hwint[5]);
-
-}
-
 // Remap IRQ, or every time IRQ fires, we would get Double Fault Exception
 // IRQ 0 to 15 are mapped to IDT[32] to IDT[47]
 void irq_remap(void) {
@@ -56,12 +81,29 @@ void irq_remap(void) {
     outportb(SLAVE_PIC_PORT + 1, 0x00);
 }
 
+void isrs_init() {
+    int i;
+    for (i=0;i<32;i++)
+        set_trap_gate(i, hwint[i]);
+    set_task_gate(3, hwint[3]);
+    set_task_gate(4, hwint[4]);
+    set_task_gate(5, hwint[5]);
+
+}
+
 void irq_install(int no, void (*handler)(struct regs* r)) {
     irq_routines[no] = handler;
 }
 
 void irq_uninstall(int no) {
     irq_routines[no] = 0;
+}
+
+void irq_init() {
+   // set_itr_gate(32, (uint) irq32);
+    int i;
+    for (i=32;i<48;i++)
+        set_itr_gate(i, hwint[i]);
 }
 
 void idt_init() {
@@ -72,13 +114,6 @@ void idt_init() {
     isrs_init();
     irq_init();
     __asm__ __volatile__ ("lidt %0" :: "m"(idt_p));
-}
-
-void irq_init() {
-   // set_itr_gate(32, (uint) irq32);
-    int i;
-    for (i=32;i<48;i++)
-        set_itr_gate(i, hwint[i]);
 }
 
 // Trap/Interrupt Handler
@@ -102,4 +137,3 @@ void int_handler(struct regs* rgs) {
         outportb(MASTER_PIC_PORT, 0x20);     // send EOI to master PIC
     }
 }
-
