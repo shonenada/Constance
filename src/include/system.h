@@ -36,8 +36,7 @@ void isrs_init();
 void idt_init();
 void irq_init();
 
-void fault_handler(struct regs*);
-void irq_handler(struct regs*);
+void int_handler(struct regs*);
 
 void timer_init();
 void keyboard_init();
