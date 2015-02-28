@@ -31,3 +31,5 @@
 bin/
 *.img
 log/
+
+*.swp
