@@ -8,8 +8,6 @@ void kmain() {
     puts("Hello Constance!\n");
     gdt_init();
     idt_init();
-    isrs_init();
-    irq_init();
     timer_init();
     keyboard_init();
 
