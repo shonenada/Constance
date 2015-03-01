@@ -1,6 +1,6 @@
 #include <system.h>
 
-int timer_ticks = 0;
+static uint timer_ticks = 0;
 
 void set_timer_phaser(int hz) {
     int div = 1193180 / hz;

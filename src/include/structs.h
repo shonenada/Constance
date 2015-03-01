@@ -57,4 +57,14 @@ struct regs {
 };
 #define SIZE_REGS sizeof(struct regs)
 
+struct time {
+    int tm_year;
+    int tm_month;
+    int tm_day;
+    int tm_hour;
+    int tm_minute;
+    int tm_second;
+};
+#define SIZE_TIME sizeof(struct time)
+
 #endif

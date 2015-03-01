@@ -41,4 +41,7 @@ void int_handler(struct regs*);
 void timer_init();
 void keyboard_init();
 
+void time_init();
+long timestamp();
+
 #endif
