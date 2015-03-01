@@ -12,12 +12,14 @@ size_t strlen(char*);
 uchar inportb(ushort _port);
 void outportb(ushort, uchar);
 
-/* scrn.c */
+/* console.c */
 void cls(void);
 void putch(char);
 void puts(char*);
 void settextcolor(uchar, uchar);
 void video_init(void);
+void print_number(uint, uint);
+void printk(char*, ...);
 
 /* gdt.c */
 void gdt_set(struct gdt_entry*, uint, uint, uint, uint);
@@ -43,5 +45,7 @@ void keyboard_init();
 
 void time_init();
 long timestamp();
+
+volatile void panic(const char* s);
 
 #endif

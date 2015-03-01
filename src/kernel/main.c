@@ -10,7 +10,7 @@ void kmain() {
     timer_init();
     time_init();
     keyboard_init();
-    __asm__ __volatile__ ("sti");
+    asm volatile("sti");
 
     puts("Hello Constance!\n");
 

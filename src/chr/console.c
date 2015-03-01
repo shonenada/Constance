@@ -90,6 +90,37 @@ void print_number(uint num, uint base) {
     putch(numbers[num % base]);
 }
 
+void printk(char *fmt, ...) {
+    char c;
+    char *str;
+    int* arg = (int*)(void*)&fmt + 1;
+    while((c = *fmt++) != '\0') {
+        if (c == '%') {
+            switch(*fmt) {
+                case 'c':
+                    putch(*arg++);
+                    break;
+                case 's':
+                    puts((char*)(*arg++));
+                    break;
+                case 'o':
+                    print_number((unsigned long) *arg++, 8);
+                    break;
+                case 'x':
+                    print_number((unsigned long) *arg++, 16);
+                    break;
+                case 'd':
+                case 'l':
+                    print_number((unsigned long) *arg++, 10);
+                    break;
+            }
+            fmt++;
+        } else {
+            putch(c);
+        }
+    }
+}
+
 void settextcolor(uchar forecolor, uchar backcolor) {
     attrib = (backcolor << 4) | (forecolor & 0x0f);
 }
