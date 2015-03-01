@@ -1,4 +1,7 @@
 #include <system.h>
+#include <segment.h>
+#include <time.h>
+#include <console.h>
 
 static uint timer_ticks = 0;
 

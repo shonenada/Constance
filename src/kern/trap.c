@@ -1,4 +1,7 @@
 #include <system.h>
+#include <segment.h>
+#include <time.h>
+#include <console.h>
 
 extern uint hwint[256];
 struct idt_entry idt[256];    // must be 256

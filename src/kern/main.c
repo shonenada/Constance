@@ -1,4 +1,7 @@
 #include <system.h>
+#include <console.h>
+#include <segment.h>
+#include <time.h>
 
 void init() {
 }

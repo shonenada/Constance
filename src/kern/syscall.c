@@ -1,4 +1,5 @@
 #include <system.h>
+#include <segment.h>
 #include <syscall.h>
 
 #define MAX_SYSCALL 10

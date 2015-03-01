@@ -1,4 +1,5 @@
 #include <system.h>
+#include <time.h>
 
 static long startup_ts;
 

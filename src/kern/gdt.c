@@ -1,4 +1,5 @@
 #include <system.h>
+#include <segment.h>
 
 struct gdt_entry gdt[GDT_SIZE];
 struct gdt_ptr gp;

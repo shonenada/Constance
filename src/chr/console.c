@@ -1,4 +1,5 @@
 #include <system.h>
+#include <console.h>
 
 // Global variable for vga memory (0xb8000), set in kern.ld
 extern struct vchar vgamemptr[25][80];
@@ -92,7 +93,6 @@ void print_number(uint num, uint base) {
 
 void printk(char *fmt, ...) {
     char c;
-    char *str;
     int* arg = (int*)(void*)&fmt + 1;
     while((c = *fmt++) != '\0') {
         if (c == '%') {
