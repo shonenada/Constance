@@ -116,7 +116,7 @@ void idt_init() {
     memset(&idt, 0, SIZE_IDT_ENTRY * 256);
     isrs_init();
     irq_init();
-    __asm__ __volatile__ ("lidt %0" :: "m"(idt_p));
+    asm volatile ("lidt %0" :: "m"(idt_p));
 }
 
 // Trap/Interrupt Handler
@@ -125,8 +125,8 @@ void int_handler(struct regs* rgs) {
     void (*handler) (struct regs *r);
 
     if (rgs->int_no < 32) {
-        puts(exception_msg[rgs->int_no]);
-        puts(" Exception! System Halted! \n");
+        printk(exception_msg[rgs->int_no]);
+        printk(" Exception! System Halted! \n");
         for(;;);
     }
     if (rgs->int_no >= 32) {
