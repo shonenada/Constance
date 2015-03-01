@@ -1,10 +1,13 @@
 #include <system.h>
+#include <console.h>
 #include <segment.h>
-#include <syscall.h>
+#include <unistd.h>
 
-#define MAX_SYSCALL 10
+int errno = 0;
 
-static void* sys_routines[MAX_SYSCALL];
+static void* sys_routines[MAX_SYSCALL] = {
+    [__NR_nosys] = &nosys,
+};
 
 // System call
 // eax: which system call
@@ -22,5 +25,10 @@ int do_syscall(struct regs *rgs) {
     } else {
         rgs->eax = result;
     }
+    return 0;
+}
+
+int nosys(struct regs* rgs) {
+    puts("No Syscall");
     return 0;
 }
