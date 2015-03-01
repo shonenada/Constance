@@ -2,7 +2,6 @@
 #define __SYSTEM_H
 
 #include <const.h>
-#include <structs.h>
 
 /* string.c */
 void *memcpy(void*, const void*, size_t);
