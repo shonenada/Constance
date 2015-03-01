@@ -1,4 +1,5 @@
 [bits 32]
+align 4
 
 [extern kmain]
   call kmain
@@ -18,6 +19,7 @@ gdt_flush:
 _ret_c:
   ret    ;; return to C
 
+[section .text]
 ;; hardware interrupt common stub,
 ;;  saves processor state, sets up for kernel mode segments,
 ;;  calls fault handler, finally restore stack
@@ -51,7 +53,6 @@ int_common_hdl:
 
 %macro mkhwint 1
 _hwint%1:
-  cli
   %if %1 != 8 && (%1 < 10 || %1 > 14)
     push dword 0
   %endif

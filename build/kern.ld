@@ -3,22 +3,21 @@ SECTIONS {
     __bios__ = 0xa0000;
     vgamemptr = 0xb8000;
     .text 0x100000 : {
-        __kbegin__ = .;
-        __code__ = .;
+        code = .;
         bin/entry.o(.text) bin/main.o(.text) *(.text);
+        *(.rodata);
         . = ALIGN(4096);
     }
     .data : {
-        __data__ = .;
-        *(.rodata);
+        data = .;
         *(.data)
         . = ALIGN(4096);
     }
     .bss : {
-        __bss__ = .;
+        bss = .;
         *(.bss);
         . = ALIGN(4096);
     }
-    __kend__ = .;
+    end = .;
 }
 

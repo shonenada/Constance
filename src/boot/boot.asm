@@ -1,17 +1,4 @@
 align 4
-;; ---------------------------------------------------------------------------
-;; Macro for GDT struct
-;; GlobalDescriptor Base, Limit, Attr
-;; More detail from struct of GDT
-;;
-
-%macro GlobalDescriptor 3
-  dw %2 & 0xffff    ; Section Limit
-  dw %1 & 0xffff    ; Section Base
-  db (%1 >> 16) & 0xff    ; Section Base
-  dw ((%2 >> 8) * 0xf00) | (%3 & 0xf0ff)    ; Attrs, Section Limit, Attrs
-  db (%1 >> 24) & 0xff
-%endmacro
 
 [bits 16]
 ;; ---------------------------------------------------------------------------
@@ -81,6 +68,7 @@ _print_loaded_msg:
 ;;
 
 _read_sector:
+  push cx
   push bx
   mov ax, si
   mov cl, 18    ;; 18 sector in each track
@@ -99,6 +87,7 @@ _read_sector:
     int 0x13
     jc __go_on_reading    ;; CF set to 1 if there is error, just read again
   pop bx
+  pop cx
   ret
 
 ;; ---------------------------------------------------------------------------
@@ -197,6 +186,20 @@ _start:
   jmp code_selector:_start_pm    ; Long jump into 32-bit protect mode
 
 [bits 32]
+;; ---------------------------------------------------------------------------
+;; Macro for GDT struct
+;; GlobalDescriptor Base, Limit, Attr
+;; More detail from struct of GDT
+;;
+
+%macro GlobalDescriptor 3
+  dw %2 & 0xffff    ; Section Limit
+  dw %1 & 0xffff    ; Section Base
+  db (%1 >> 16) & 0xff    ; Section Base
+  dw ((%2 >> 8) * 0xf00) | (%3 & 0xf0ff)    ; Attrs, Section Limit, Attrs
+  db (%1 >> 24) & 0xff
+%endmacro
+
 _start_pm:    ; Now we are in 32-bit protect mode
   ; Initialize registers in Protect Mode
   mov ax, data_selector
