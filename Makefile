@@ -1,4 +1,4 @@
-CINC := -Isrc/include
+CINC := -Isrc/inc
 CFLAGS := -Wall -nostdinc -fno-builtin -fno-stack-protector \
 		 -finline-functions -finline-small-functions -findirect-inlining \
 		 -finline-functions-called-once
