@@ -82,6 +82,14 @@ void puts(char *text) {
     }
 }
 
+void print_number(uint num, uint base) {
+    static char * numbers = "0123456789ABCDEF";
+    if (num > base) {
+        print_number(num/base, base);
+    }
+    putch(numbers[num % base]);
+}
+
 void settextcolor(uchar forecolor, uchar backcolor) {
     attrib = (backcolor << 4) | (forecolor & 0x0f);
 }
