@@ -2,7 +2,7 @@
 #define __SEGMENT_H
 
 // Define a struct of GDT
-struct gdt_entry {
+struct seg_desc {
     uint limit_low:16;    // Limit of segment, low 16 bits
     uint base_low:16;    // Base address of segment, low 16 bits
     uint base_mid:8;    // Base address of segment, middle 8 bits
@@ -17,7 +17,7 @@ struct gdt_entry {
     uint attr_g:1;    // Granularity (0 -> 1B, 1 -> 4KB)
     uint base_high:8;    // High 8 bits of segment base address
 } __attribute__ ((packed));
-#define SIZE_GDT_ENTRY sizeof(struct gdt_entry)
+#define SIZE_GDT_ENTRY sizeof(struct seg_desc)
 
 struct gdt_ptr {
     ushort limit;
@@ -106,7 +106,7 @@ struct regs {
 #define RING2 0x2
 #define RING3 0x3
 
-void gdt_set(struct gdt_entry*, uint, uint, uint, uint);
+void seg_set(struct seg_desc*, uint, uint, uint, uint);
 extern void gdt_flush();
 void gdt_init();
 void idt_set(int num, uint, ushort, uchar, uchar);

@@ -6,7 +6,7 @@ align 4
   jmp $
 
 [global gdt_flush]
-[extern gp]    ;; gp defined by C in gdt.c
+[extern gp]    ;; gp defined by C in segment.c
 gdt_flush:
   lgdt [gp]    ;; Load GDT with _gp
   mov ax, 0x10    ;; 0x10, offset in the GDT to data segment
