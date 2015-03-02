@@ -19,6 +19,21 @@ gdt_flush:
 _ret_c:
   ret    ;; return to C
 
+[extern pdir]
+[global flush_cr3]
+flush_cr3:
+  mov eax, [pdir]
+  mov cr3, eax
+
+[global page_enable]
+page_enable:
+ push eax
+ mov eax, cr0
+ or eax, 0x80000000
+ mov cr0, eax
+ pop eax
+ ret
+
 [section .text]
 ;; hardware interrupt common stub,
 ;;  saves processor state, sets up for kernel mode segments,
