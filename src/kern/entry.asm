@@ -24,6 +24,7 @@ _ret_c:
 flush_cr3:
   mov eax, [pdir]
   mov cr3, eax
+  ret
 
 [global page_enable]
 page_enable:
