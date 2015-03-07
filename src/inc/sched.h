@@ -4,8 +4,6 @@
 #include <const.h>
 #include <segment.h>
 
-#define NR_LDT 3
-
 #define TSS0 0x5
 #define TSS_SEL(n) ((n<<4)+(TSS0<<3))    // offset of tss in GDT, size of descriptor = 8 bytes
 #define LDT0 (TSS0+1)
