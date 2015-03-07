@@ -20,3 +20,4 @@ void page_init() {
     flush_cr3();
     page_enable();
 }
+
