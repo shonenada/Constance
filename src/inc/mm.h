@@ -7,7 +7,10 @@
 #define PG_RW 0b10
 #define PG_U 0b100
 
-#define PAGE_SIZE (4*1024)     // 4kb each page
+#define LO_MEM 0x100000
+#define HI_MEM 0x1000000
+#define PAGE_SIZE 0x1000    // 4kb
+#define NR_FRAME ((HI_MEM-LO_MEM)/PAGE_SIZE)
 
 // bucket allocation
 struct bucket_desc {
@@ -23,19 +26,7 @@ struct bk_dir {
     struct bucket_desc *chain;
 };
 
-struct bk_dir bucket_dir[] = {
-    {16, (struct bk_dir*) 0},
-    {32, (struct bk_dir*) 0},
-    {64, (struct bk_dir*) 0},
-    {128, (struct bk_dir*) 0},
-    {256, (struct bk_dir*) 0},
-    {512, (struct bk_dir*) 0},
-    {1024, (struct bk_dir*) 0},
-    {2048, (struct bk_dir*) 0},
-    {4096, (struct bk_dir*) 0},
-    {0, (struct bk_dir*) 0}};
-
-struct bucket_desc *free_bk_desc_chain = (struct bucket_desc*) 0;
+struct bucket_desc *free_bk_desc_chain;
 
 // set cr3 to be the base address of page directory
 extern void flush_cr3();
@@ -44,5 +35,7 @@ extern void page_enable();
 
 void page_init();
 void kmalloc();
+uint palloc();
+uint pfree(uint addr);
 
 #endif
