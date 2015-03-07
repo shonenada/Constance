@@ -6,7 +6,7 @@
 int errno = 0;
 
 static int sys_routines[MAX_SYSCALL] = {
-    [__NR_nosys] = &nosys,
+    [__NR_nosys] = &sys_nosys,
 };
 
 // System call
@@ -31,7 +31,7 @@ int do_syscall(struct regs *rgs) {
     return 0;
 }
 
-int nosys(struct regs* rgs) {
+int sys_nosys(struct regs* rgs) {
     puts("No Syscall");
     return 0;
 }
