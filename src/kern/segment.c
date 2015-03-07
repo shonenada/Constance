@@ -2,7 +2,7 @@
 #include <segment.h>
 
 struct seg_desc gdt[GDT_SIZE];
-struct gdt_ptr gp;
+struct desc_ptr gp;    // gdt pointer;
 
 void seg_set(struct seg_desc *entry, uint base, uint limit, uint dpl, uint type) {
     entry->base_low = base & 0xFFFF;
@@ -20,13 +20,17 @@ void seg_set(struct seg_desc *entry, uint base, uint limit, uint dpl, uint type)
     entry->attr_avl = 0;
     entry->attr_0 = 0;
     entry->attr_db = 1;    // Operand size 32-bit
-    entry->attr_g= 1;     // 4KB
+    entry->attr_g = 1;     // 4KB
 }
 
 void ldt_set(struct seg_desc *entry, uint base) {
+    seg_set(entry, base, 0x3, RING0, STS_TYPE_LDT);
+    entry->attr_s = 0;    // s = 0, system segment
 }
 
 void tss_set(struct seg_desc *entry, uint base) {
+    seg_set(entry, base, 0x68, RING0, STS_TYPE_TTS32A);     // limit must more than 0x67
+    entry->attr_s = 0;    // s = 0, system segment
 }
 
 void gdt_init() {
@@ -37,7 +41,7 @@ void gdt_init() {
     seg_set(&gdt[4], 0, 0xFFFFFFFF, RING3, SEG_DATA_RW);
 
     gp.base = (uint) &gdt;
-    gp.limit = (SIZE_GDT_ENTRY * GDT_SIZE) - 1;
+    gp.limit = (SIZE_DESC_ENTRY * GDT_SIZE) - 1;
 
     gdt_flush();    // flush gdt, defined in entry.asm
 }

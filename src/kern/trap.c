@@ -126,7 +126,7 @@ void int_handler(struct regs* rgs) {
 
     if (rgs->int_no < 32) {
         printk(exception_msg[rgs->int_no]);
-        printk(" Exception! System Halted! \n");
+        printk(" Exception with ERRNO %d ! System Halted! \n", rgs->err_code);
         for(;;);
     }
     if (rgs->int_no >= 32) {

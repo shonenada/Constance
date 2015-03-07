@@ -13,4 +13,6 @@ typedef unsigned short ushort;
 #define USER_CS 0x18
 #define USER_DS 0x20
 
+#define NR_TASKS 64    // Max process numbers
+
 #endif

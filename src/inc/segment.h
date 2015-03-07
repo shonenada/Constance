@@ -1,6 +1,9 @@
 #ifndef __SEGMENT_H
 #define __SEGMENT_H
 
+#include <const.h>
+#include <segment.h>
+
 // Define a struct of GDT
 struct seg_desc {
     uint limit_low:16;    // Limit of segment, low 16 bits
@@ -17,13 +20,13 @@ struct seg_desc {
     uint attr_g:1;    // Granularity (0 -> 1B, 1 -> 4KB)
     uint base_high:8;    // High 8 bits of segment base address
 } __attribute__ ((packed));
-#define SIZE_GDT_ENTRY sizeof(struct seg_desc)
+#define SIZE_DESC_ENTRY sizeof(struct seg_desc)
 
-struct gdt_ptr {
+struct desc_ptr {
     ushort limit;
     uint base;
 } __attribute__ ((packed));
-#define SIZE_GDT_PTR sizeof(struct gdt_ptr)
+#define SIZE_DESC_PTR sizeof(struct desc_ptr)
 
 struct idt_entry {
     uint base_low:16;    // base address of ISR (Interrupt Service Routine) 
@@ -50,8 +53,6 @@ struct regs {
 };
 #define SIZE_REGS sizeof(struct regs)
 
-/* GDT */
-#define GDT_SIZE 5
 
 // Descriptor type bits
 #define SEG_DATA 0b0000    // Data segment
@@ -107,8 +108,9 @@ struct regs {
 #define RING3 0x3
 
 void seg_set(struct seg_desc*, uint, uint, uint, uint);
+void tss_set(struct seg_desc*, uint);
+void ldt_set(struct seg_desc*, uint);
 extern void gdt_flush();
-void gdt_init();
 void idt_set(int num, uint, ushort, uchar, uchar);
 inline void set_itr_gate(int num, uint);
 inline void set_trap_gate(int num, uint);
@@ -116,9 +118,15 @@ inline void set_task_gate(int num, uint);
 inline void irq_install(int, void(*)(struct regs*));
 inline void irq_uninstall(int);
 void irq_remap();
+void gdt_init();
 void isrs_init();
 void idt_init();
 void irq_init();
 void int_handler(struct regs*);
+
+#define GDT_SIZE (4+NR_TASKS+1)
+
+extern struct seg_desc gdt[];
+extern struct desc_ptr gp;    // gdt pointer;
 
 #endif

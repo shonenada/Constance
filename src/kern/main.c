@@ -3,6 +3,7 @@
 #include <segment.h>
 #include <page.h>
 #include <time.h>
+#include <sched.h>
 
 void init() {
 }
@@ -15,6 +16,7 @@ void kmain() {
     time_init();
     page_init();
     keyboard_init();
+    sched_init();
     asm volatile("sti");
 
     puts("Hello Constance!\n");
