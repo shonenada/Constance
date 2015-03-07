@@ -8,7 +8,7 @@ extern uint hwint[256];
 struct idt_entry idt[256];    // must be 256
 struct idt_ptr idt_p;
 
-void *irq_routines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int *irq_routines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 char *exception_msg[] = {
     "Division By Zero",
@@ -89,12 +89,10 @@ void isrs_init() {
     int i;
     for (i=0;i<32;i++)
         set_trap_gate(i, hwint[i]);
-    set_task_gate(3, hwint[3]);
-    set_task_gate(4, hwint[4]);
-    set_task_gate(5, hwint[5]);
-
+    set_task_gate(0x3, hwint[0x3]);
+    set_task_gate(0x4, hwint[0x4]);
+    set_task_gate(0x5, hwint[0x5]);
     set_task_gate(0x80, hwint[0x80]);
-    irq_install(0x80, &do_syscall);
 }
 
 void irq_install(int no, int (*handler)(struct regs* r)) {
@@ -125,14 +123,14 @@ void idt_init() {
 // Trap/Interrupt Handler
 // Just print some information
 void int_handler(struct regs* rgs) {
-    void (*handler) (struct regs *r);
+    int (*handler) (struct regs *r);
 
     if (rgs->int_no < 32) {
         printk(exception_msg[rgs->int_no]);
         printk(" Exception with ERRNO %d ! System Halted! \n", rgs->err_code);
         for(;;);
     }
-    if (rgs->int_no >= 32) {
+    else if (rgs->int_no >= 32 && rgs->int_no != 0x80) {
         handler = irq_routines[rgs->int_no - 32];
         if (handler) {
             handler(rgs);
@@ -141,5 +139,9 @@ void int_handler(struct regs* rgs) {
             outportb(SLAVE_PIC_PORT, 0x20);     // send EOI to slave PIC
         }
         outportb(MASTER_PIC_PORT, 0x20);     // send EOI to master PIC
+    }
+    else if (rgs->int_no >= 120) {    // syscall
+        handler = &do_syscall;
+        handler(rgs);
     }
 }

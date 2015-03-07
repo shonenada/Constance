@@ -5,7 +5,7 @@
 
 int errno = 0;
 
-static void* sys_routines[MAX_SYSCALL] = {
+static int sys_routines[MAX_SYSCALL] = {
     [__NR_nosys] = &nosys,
 };
 
@@ -20,10 +20,13 @@ int do_syscall(struct regs *rgs) {
     }
     handler = sys_routines[rgs->eax];
 
-    result = handler(rgs);
-    if (result < 0) {
-    } else {
-        rgs->eax = result;
+    if (handler) {
+        result = handler(rgs);
+        if (result < 0) {
+
+        } else {
+            rgs->eax = result;
+        }
     }
     return 0;
 }

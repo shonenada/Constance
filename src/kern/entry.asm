@@ -81,7 +81,7 @@ _hwint%1:
 %endmacro
 
 %assign i 0
-%rep 49
+%rep 256
 mkhwint i
 %assign i i+1
 %endrep
@@ -90,7 +90,7 @@ mkhwint i
 [global hwint]
 hwint:
   %assign i 0
-  %rep 49
+  %rep 256
     def_hwint i
   %assign i i+1
   %endrep

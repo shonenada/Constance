@@ -15,7 +15,6 @@ void set_timer_phaser(int hz) {
 int timer_handler(struct regs *r) {
     timer_ticks++;
     if (timer_ticks % TIMER_HZ == 0) {
-        puts("One second has passed\n");
     }
     return 0;
 }

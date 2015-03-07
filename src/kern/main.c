@@ -20,6 +20,7 @@ void kmain() {
     asm volatile("sti");
 
     puts("Hello Constance!\n");
+    asm volatile ("int $0x80"::"a"(0));
 
     for(;;);
 }
