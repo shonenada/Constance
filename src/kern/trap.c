@@ -128,6 +128,7 @@ void int_handler(struct regs* rgs) {
     if (rgs->int_no < 32) {
         printk(exception_msg[rgs->int_no]);
         printk(" Exception with ERRNO %d ! System Halted! \n", rgs->err_code);
+        dump_rgs(rgs);
         for(;;);
     }
     else if (rgs->int_no >= 32 && rgs->int_no != 0x80) {
@@ -144,4 +145,10 @@ void int_handler(struct regs* rgs) {
         handler = &do_syscall;
         handler(rgs);
     }
+}
+
+void dump_rgs(struct regs* rgs) {
+    printk("gs: %d, fs: %d, es: %d, ds: %d\n", rgs->gs, rgs->fs, rgs->es, rgs->ds);
+    printk("edi: %d, esi: %d, ebp: %d\n", rgs->edi, rgs->esi, rgs->ebp);
+    printk("ebx: %d, edx: %d, ecx: %d, eax: %d\n", rgs->ebx, rgs->edx, rgs->ecx, rgs->eax);
 }

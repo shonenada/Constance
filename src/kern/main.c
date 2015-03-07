@@ -1,9 +1,11 @@
 #include <system.h>
+#include <const.h>
 #include <console.h>
 #include <segment.h>
 #include <page.h>
 #include <time.h>
 #include <sched.h>
+#include <asm.h>
 
 void init() {
 }
@@ -20,7 +22,6 @@ void kmain() {
     sti();
 
     puts("Hello Constance!\n");
-    asm volatile ("int $0x80"::"a"(0));
 
     for(;;);
 }

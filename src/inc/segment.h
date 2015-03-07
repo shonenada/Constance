@@ -123,6 +123,7 @@ void isrs_init();
 void idt_init();
 void irq_init();
 void int_handler(struct regs*);
+void dump_rgs(struct regs*);
 
 #define GDT_SIZE (4+NR_TASKS+1)
 

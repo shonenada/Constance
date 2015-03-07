@@ -2,6 +2,7 @@
 #include <asm.h>
 #include <segment.h>
 #include <sched.h>
+#include <console.h>
 
 uchar mem0[1024] = {0,};
 struct tss_entry tss;
@@ -12,14 +13,14 @@ void sched_init() {
     struct ktask *t = current = tasks[0] = (struct ktask*) (uint) mem0;
     t->pid = 0;
     t->ppid = 0;
-    t->state = TASK_STOPPED;
+    t->state = TASK_RUNNING;
     t->ldt_sel = LDT_SEL(t->pid);
 
     tss.ss0 = KERN_DS;
     tss.esp0 = (uint)t + 0x1000;
 
-    seg_set(&(t->ldts[1]), 0, 420 * 1024, RING3, SEG_CODE_EXRD);
-    seg_set(&(t->ldts[2]), 0, 420 * 1024, RING3, SEG_DATA_RW);
+    seg_set(&(t->ldts[1]), 0, 640 * 1024, RING3, SEG_CODE_EXRD);
+    seg_set(&(t->ldts[2]), 0, 640 * 1024, RING3, SEG_DATA_RW);
 
     tss_set(&gdt[TSS0], (uint) &tss);
     ldt_set(&gdt[LDT0], (uint) &(t->ldts));
@@ -62,14 +63,16 @@ void wakeup_on(struct ktask* task) {
 
 void schedule() {
     int idx;
-    int _pid = current->pid + 1;    // start from next task
-    for(;_pid<NR_TASKS+_pid;_pid++) {
+    int _pid;    // start from next task
+    int next_pid = current->pid + 1; 
+    struct ktask *task;
+    for(_pid=next_pid;_pid<next_pid+NR_TASKS;_pid++) {
         idx = _pid % NR_TASKS;
-        if (!tasks[idx])
+        task = tasks[idx];
+        if (!task || task == NULL || task == 0)
             continue;
-        if (tasks[idx]->state == TASK_RUNNING) {
+        if (tasks[idx] != NULL && tasks[idx]->state == TASK_RUNNING)
             switch_to(tasks[idx]);
-        }
     }
 }
 
@@ -80,7 +83,7 @@ void switch_to(struct ktask* target) {
     tss.esp0 = (uint)target + 0x1000;
     lldt(LDT_SEL(target->pid));    // modify esp according to LDT of task
     current = target;
-    // restort stack
+    // restore stack
     asm volatile (
         "mov %%eax, %%esp;"\
         "pop %%gs;"\
