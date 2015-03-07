@@ -67,6 +67,6 @@ extern int errno;
 
 int do_syscall(struct regs *);
 
-int nosys(struct regs*);
+static inline _syscall0(int, nosys);
 
 #endif
