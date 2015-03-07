@@ -115,7 +115,7 @@ void idt_set(int num, uint, ushort, uchar, uchar);
 inline void set_itr_gate(int num, uint);
 inline void set_trap_gate(int num, uint);
 inline void set_task_gate(int num, uint);
-inline void irq_install(int, void(*)(struct regs*));
+inline void irq_install(int, int(*)(struct regs*));
 inline void irq_uninstall(int);
 void irq_remap();
 void gdt_init();

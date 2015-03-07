@@ -41,7 +41,7 @@ unsigned char kbdus[128] = {
     0,	/* All other keys are undefined */
 };
 
-void keyboard_handler(struct regs *rgs) {
+int keyboard_handler(struct regs *rgs) {
     uchar kbcode;
 
     kbcode = inportb(0x60);    // Read from data buffer of keyboard
@@ -52,6 +52,7 @@ void keyboard_handler(struct regs *rgs) {
         // just putch;
         putch(kbdus[kbcode]);
     }
+    return 0;
 }
 
 void keyboard_init() {

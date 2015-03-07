@@ -2,6 +2,7 @@
 #include <segment.h>
 #include <time.h>
 #include <console.h>
+#include <unistd.h>
 
 extern uint hwint[256];
 struct idt_entry idt[256];    // must be 256
@@ -92,9 +93,11 @@ void isrs_init() {
     set_task_gate(4, hwint[4]);
     set_task_gate(5, hwint[5]);
 
+    set_task_gate(0x80, hwint[0x80]);
+    irq_install(0x80, &do_syscall);
 }
 
-void irq_install(int no, void (*handler)(struct regs* r)) {
+void irq_install(int no, int (*handler)(struct regs* r)) {
     irq_routines[no] = handler;
 }
 
