@@ -5,7 +5,7 @@
 uint *pdir = (uint *) 0x10000;
 uint *ptab = (uint *) 0x1D000;
 
-uchar page_map[NR_PAGE] = {0,};
+uchar page_map[NPAGE] = {0,};
 struct bucket_desc *free_bk_desc_chain = (struct bucket_desc*) 0;
 struct bk_dir bucket_dir[] = {
     {16, (struct bk_dir*) 0},
@@ -20,13 +20,21 @@ struct bk_dir bucket_dir[] = {
     {0, (struct bk_dir*) 0}};
 
 int do_page_fault(struct regs *rgs) {
-    panic("do_page_fault");
-    return -1;
+    uint cr2;
+    asm volatile ("movl %%cr2, %0":"=a"(cr2));
+    printk("do_page_fault(): cr2= %x\n", cr2);
+    for(;;);
+}
+
+int do_no_page(struct regs *rgs) {
+}
+
+int do_wp_page(struct regs *rgs) {
 }
 
 uint palloc() {
     int i;
-    for (i=0;i<NR_PAGE;i++) {
+    for (i=0;i<NPAGE;i++) {
         if (page_map[i] == 0) {
             page_map[i]++;
             return (LO_MEM + (i * PAGE_SIZE));
@@ -50,11 +58,11 @@ uint pfree(uint addr) {
 void page_init() {
     int i;
     uint addr = 0;
-    for(i=0;i<NR_PAGE;i++) {
+    for(i=0;i<NPAGE;i++) {
         ptab[i] = (addr | PG_P | PG_RW | PG_U);
         addr += PAGE_SIZE;    // 4kb each page
     }
-    for(i=0;i<NR_PAGE;i++)
+    for(i=0;i<NPAGE;i++)
         pdir[i] = 0 | PG_RW;
 
     // first entry

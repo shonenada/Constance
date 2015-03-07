@@ -37,5 +37,7 @@ void kmalloc();
 uint palloc();
 uint pfree(uint addr);
 int do_page_fault(struct regs *rgs);
+int do_no_page(struct regs *rgs);
+int do_wp_page(struct regs *rgs);
 
 #endif

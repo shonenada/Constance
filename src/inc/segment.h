@@ -125,8 +125,6 @@ void irq_init();
 void int_handler(struct regs*);
 void dump_rgs(struct regs*);
 
-#define GDT_SIZE (4+NR_TASKS+1)
-
 extern struct seg_desc gdt[];
 extern struct desc_ptr gp;    // gdt pointer;
 

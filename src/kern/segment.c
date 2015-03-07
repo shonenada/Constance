@@ -1,7 +1,7 @@
 #include <system.h>
 #include <segment.h>
 
-struct seg_desc gdt[GDT_SIZE];
+struct seg_desc gdt[NGDT];
 struct desc_ptr gp;    // gdt pointer;
 
 void seg_set(struct seg_desc *entry, uint base, uint limit, uint dpl, uint type) {
@@ -41,7 +41,7 @@ void gdt_init() {
     seg_set(&gdt[4], 0, 0xFFFFFFFF, RING3, SEG_DATA_RW);
 
     gp.base = (uint) &gdt;
-    gp.limit = (SIZE_DESC_ENTRY * GDT_SIZE) - 1;
+    gp.limit = (SIZE_DESC_ENTRY * NGDT) - 1;
 
     gdt_flush();    // flush gdt, defined in entry.asm
 }

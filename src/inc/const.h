@@ -13,9 +13,12 @@ typedef unsigned short ushort;
 #define USER_CS 0x18
 #define USER_DS 0x20
 
-#define NR_LDT 3
-#define NR_TASKS 64    // Max process numbers
-#define NR_PAGE 1024
+#define NLDT 3
+#define NTASKS 64    // Max process numbers
+#define NGDT (4+NTASKS+1)
+#define NPAGE 1024
+#define BLK_SIZE 1024
+#define NR_BUF (0x200000/BLK_SIZE)
 
 #define NULL ((void*)0)
 
