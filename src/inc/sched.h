@@ -63,7 +63,7 @@ struct ktask {
 };
 
 extern struct ktask *current;
-extern struct ktask *tasks[NR_TASKS];
+extern struct ktask *tasks[NTASKS];
 
 void sched_init();
 void sleep();

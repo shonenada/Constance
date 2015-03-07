@@ -2,14 +2,24 @@
 #define __PAGE_H
 #include <const.h>
 
-#define PG_P 0b1
-#define PG_RW 0b10
-#define PG_U 0b100
+#define PTE_P           0b1    // present
+#define PTE_RW          0b10    // writable
+#define PTE_U           0b100    // user, supervior
+#define PTE_WT          0b1000    // wirte-through
+#define PTE_CD          0b10000    // cache-disabled
+#define PTE_A           0b100000    // accessed
+#define PTE_D           0b1000000    // dirty
+#define PTE_PS          0b10000000     // Page size
+#define PTE_MBZ         0b110000000    // bits must be zero
 
 #define LO_MEM 0x100000    // TODO: fix addr
 #define HI_MEM 0x1000000
 #define PAGE_SIZE 0x1000    // 4kb
-#define NR_FRAME ((HI_MEM-LO_MEM)/PAGE_SIZE)
+
+#define PD_INDEX(addr) ((uint)((addr>>0x16)&0x3FF))    // get page directory index by linear address, 10 bits
+#define PT_INDEX(addr) ((uint)((addr>>0x0C)&0x3FF))    // get page table index by linear address, 10 bits
+#define POFF(addr) ((uint)(addr&0xFFF))
+#define PTE_ADDR(addr) ((uint)(addr)& ~0xFFF)
 
 // bucket allocation
 struct bucket_desc {

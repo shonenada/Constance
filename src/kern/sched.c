@@ -7,7 +7,7 @@
 uchar mem0[1024] = {0,};
 struct tss_entry tss;
 struct ktask *current = NULL;
-struct ktask *tasks[NR_TASKS] = {NULL,};
+struct ktask *tasks[NTASKS] = {NULL,};
 
 void sched_init() {
     struct ktask *t = current = tasks[0] = (struct ktask*) (uint) mem0;
@@ -66,8 +66,8 @@ void schedule() {
     int _pid;    // start from next task
     int next_pid = current->pid + 1; 
     struct ktask *task;
-    for(_pid=next_pid;_pid<next_pid+NR_TASKS;_pid++) {
-        idx = _pid % NR_TASKS;
+    for(_pid=next_pid;_pid<next_pid+NTASKS;_pid++) {
+        idx = _pid % NTASKS;
         task = tasks[idx];
         if (!task || task == NULL || task == 0)
             continue;
@@ -96,7 +96,7 @@ void switch_to(struct ktask* target) {
 
 int find_empty() {
     int _pid;
-    for(_pid=0;_pid<NR_TASKS;_pid++) {
+    for(_pid=0;_pid<NTASKS;_pid++) {
         if (tasks[_pid] == NULL) {
             return _pid;
         }

@@ -32,6 +32,7 @@ int do_no_page(struct regs *rgs) {
 int do_wp_page(struct regs *rgs) {
 }
 
+// alloc a page
 uint palloc() {
     int i;
     for (i=0;i<NPAGE;i++) {
@@ -40,13 +41,13 @@ uint palloc() {
             return (LO_MEM + (i * PAGE_SIZE));
         }
     }
-    panic("palloc(): no enough frame");
+    panic("palloc(): no enough page");
     return -1;
 }
 
 uint pfree(uint addr) {
     int i;
-    i = (addr - LO_MEM) - PAGE_SIZE;
+    i = (addr - LO_MEM) / PAGE_SIZE;
     if (page_map[i] > 0) {
         page_map[i]--;
         return i;
@@ -54,19 +55,35 @@ uint pfree(uint addr) {
     return -1;
 }
 
+// addr: linear address
+// phyaddr: physical address
+int map_page(uint addr, uint phyaddr, uint flag) {
+    uint pde = pdir[PD_INDEX(addr)];
+    if (!(pde & PTE_P)) {     //
+        pde = palloc();
+        if (pde < 0)
+            panic("map_page(): no enough page");
+        pdir[PD_INDEX(addr)] = pde | PTE_P | PTE_RW | PTE_U;
+    }
+    uint *ptab = (uint *) PTE_ADDR(pde);
+    ptab[PT_INDEX(addr)] = phyaddr | flag;
+    page_map[phyaddr/0x1000]++;
+    return 0;
+}
+
 // setup paging
 void page_init() {
     int i;
     uint addr = 0;
     for(i=0;i<NPAGE;i++) {
-        ptab[i] = (addr | PG_P | PG_RW | PG_U);
+        ptab[i] = (addr | PTE_P | PTE_RW | PTE_U);
         addr += PAGE_SIZE;    // 4kb each page
     }
     for(i=0;i<NPAGE;i++)
-        pdir[i] = 0 | PG_RW;
+        pdir[i] = 0 | PTE_RW;
 
     // first entry
-    pdir[0] = ((uint) ptab) | PG_P | PG_RW | PG_U;
+    pdir[0] = ((uint) ptab) | PTE_P | PTE_RW | PTE_U;
 
     irq_install(0x0E, do_page_fault);
 
