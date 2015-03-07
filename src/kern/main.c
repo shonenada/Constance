@@ -2,7 +2,7 @@
 #include <const.h>
 #include <console.h>
 #include <segment.h>
-#include <page.h>
+#include <mm.h>
 #include <time.h>
 #include <sched.h>
 #include <asm.h>

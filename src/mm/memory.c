@@ -1,8 +1,8 @@
 #include <const.h>
-#include <page.h>
+#include <mm.h>
 
-uint *pdir = (uint *) 0x9C000;
-uint *ptab = (uint *) 0x9D000;
+uint *pdir = (uint *) 0x100000;
+uint *ptab = (uint *) 0x10D000;
 
 // setup paging
 void page_init() {
