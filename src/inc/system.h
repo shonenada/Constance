@@ -11,6 +11,6 @@ size_t strlen(char*);
 uchar inportb(ushort _port);
 void outportb(ushort, uchar);
 
-volatile void panic(const char* s);
+void panic(const char* s);
 
 #endif

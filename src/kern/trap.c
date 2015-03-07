@@ -8,7 +8,7 @@ extern uint hwint[256];
 struct idt_entry idt[256];    // must be 256
 struct idt_ptr idt_p;
 
-int *irq_routines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+void *irq_routines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 // TODO: hwint_routines
 
 char *exception_msg[] = {

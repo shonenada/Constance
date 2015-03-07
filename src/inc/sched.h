@@ -76,7 +76,4 @@ void schedule();
 int find_empty();
 void switch_to(struct ktask* target);    // switch from current to target task
 
-inline void ltr(uint n);
-inline void lldt(uint n);
-
 #endif
