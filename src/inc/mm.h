@@ -1,13 +1,12 @@
 #ifndef __PAGE_H
 #define __PAGE_H
-
 #include <const.h>
 
 #define PG_P 0b1
 #define PG_RW 0b10
 #define PG_U 0b100
 
-#define LO_MEM 0x100000
+#define LO_MEM 0x100000    // TODO: fix addr
 #define HI_MEM 0x1000000
 #define PAGE_SIZE 0x1000    // 4kb
 #define NR_FRAME ((HI_MEM-LO_MEM)/PAGE_SIZE)
@@ -37,5 +36,6 @@ void page_init();
 void kmalloc();
 uint palloc();
 uint pfree(uint addr);
+int do_page_fault(struct regs *rgs);
 
 #endif

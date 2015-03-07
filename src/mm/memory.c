@@ -1,8 +1,9 @@
 #include <const.h>
+#include <segment.h>
 #include <mm.h>
 
-uint *pdir = (uint *) 0x100000;
-uint *ptab = (uint *) 0x10D000;
+uint *pdir = (uint *) 0x10000;
+uint *ptab = (uint *) 0x1D000;
 
 uchar page_map[NR_PAGE] = {0,};
 struct bucket_desc *free_bk_desc_chain = (struct bucket_desc*) 0;
@@ -17,6 +18,11 @@ struct bk_dir bucket_dir[] = {
     {2048, (struct bk_dir*) 0},
     {4096, (struct bk_dir*) 0},
     {0, (struct bk_dir*) 0}};
+
+int do_page_fault(struct regs *rgs) {
+    panic("do_page_fault");
+    return -1;
+}
 
 uint palloc() {
     int i;
@@ -45,14 +51,16 @@ void page_init() {
     int i;
     uint addr = 0;
     for(i=0;i<NR_PAGE;i++) {
-        ptab[i] = (addr | PG_P | PG_RW);
+        ptab[i] = (addr | PG_P | PG_RW | PG_U);
         addr += PAGE_SIZE;    // 4kb each page
     }
     for(i=0;i<NR_PAGE;i++)
         pdir[i] = 0 | PG_RW;
 
     // first entry
-    pdir[0] = ((uint) ptab) | PG_P | PG_RW;
+    pdir[0] = ((uint) ptab) | PG_P | PG_RW | PG_U;
+
+    irq_install(0x0E, do_page_fault);
 
     flush_cr3();
     page_enable();
