@@ -9,6 +9,7 @@ struct idt_entry idt[256];    // must be 256
 struct idt_ptr idt_p;
 
 int *irq_routines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+// TODO: hwint_routines
 
 char *exception_msg[] = {
     "Division By Zero",
@@ -121,7 +122,6 @@ void idt_init() {
 }
 
 // Trap/Interrupt Handler
-// Just print some information
 void int_handler(struct regs* rgs) {
     int (*handler) (struct regs *r);
 

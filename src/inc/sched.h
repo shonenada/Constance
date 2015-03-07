@@ -60,7 +60,6 @@ struct ktask {
     ushort uid, euid, suid;
     ushort gid, egid, sgid;
     uint ldt_sel;
-    struct tss_entry tss;
     struct seg_desc ldts[NR_LDT];
     struct stackframe regs;
 };
@@ -69,6 +68,13 @@ extern struct ktask *current;
 extern struct ktask *tasks[NR_TASKS];
 
 void sched_init();
+void sleep();
+void sleep_on(struct ktask*);
+void wakeup();
+void wakeup_on(struct ktask*);
+void schedule();
+int find_empty();
+void switch_to(struct ktask* target);    // switch from current to target task
 
 inline void ltr(uint n);
 inline void lldt(uint n);

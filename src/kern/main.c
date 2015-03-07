@@ -17,7 +17,7 @@ void kmain() {
     page_init();
     keyboard_init();
     sched_init();
-    asm volatile("sti");
+    sti();
 
     puts("Hello Constance!\n");
     asm volatile ("int $0x80"::"a"(0));

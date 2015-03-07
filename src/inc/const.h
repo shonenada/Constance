@@ -15,4 +15,6 @@ typedef unsigned short ushort;
 
 #define NR_TASKS 64    // Max process numbers
 
+#define NULL ((void*)0)
+
 #endif
