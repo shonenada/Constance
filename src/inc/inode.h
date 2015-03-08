@@ -40,5 +40,6 @@ struct inode {
 #define I_TEXT 0x10
 
 void iupdate(struct inode *ip);
+int iload(struct inode *ip);
 
 #endif

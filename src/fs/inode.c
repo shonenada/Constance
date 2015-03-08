@@ -1,5 +1,10 @@
-#include <inode.h>
+#include <const.h>
+#include <system.h>
+#include <sched.h>
 #include <fs.h>
+#include <inode.h>
+#include <buf.h>
+#include <blk.h>
 
 struct inode inodes[NINODE];
 
@@ -32,8 +37,8 @@ _loop:
     }
     for (ip=inodes;ip<inodes+NINODE;ip++) {
         if (ip->count == 0) {
-            ip->dev = dev;
-            ip->num = num;
+            ip->idev = dev;
+            ip->inum = num;
             ip->flag = I_LOCK;
             ip->count++;
             iload(ip);
@@ -46,17 +51,17 @@ _loop:
 
 int iload(struct inode *ip) {
     struct sblk *sp;
-    struct d_inode *itab;
+    struct d_inode *inp;
     struct buf *bp;
 
-    sp = getsblk(ip->dev);
+    sp = getsblk(ip->idev);
     if (sp == NULL) {
         panic("cannot get super block");
     }
-    bp = read_buffer(ip->dev, IBLOCK(ip->inum));
+    bp = read_buffer(ip->idev, IBLOCK(ip->inum));
     // error handle
-    itab = (struct d_inode*) bp->data;
-    memcpy(ip, &itab[(ip->inum-1)%IPB], sizeof(struct d_inode));
+    inp = (struct d_inode*) bp->data;
+    memcpy(ip, &inp[(ip->inum-1)%IPB], sizeof(struct d_inode));
     return 0;
 }
 
@@ -65,15 +70,15 @@ void iupdate(struct inode *ip) {
     struct d_inode *inp;
     struct buf *bp;
 
-    sbp = getsblk(ip->dev);
+    sbp = getsblk(ip->idev);
     if (sbp == NULL) {
         panic("iupdate: error super block");
     }
 
-    bp = read_buffer(ip->dev, IBLOCK(ip->num));
+    bp = read_buffer(ip->idev, IBLOCK(ip->inum));
 
     inp = (struct d_inode*) bp->data;
-    memcpy(&inp[(ip->num-1)%IPB], ip, sizeof(struct d_inode));
+    memcpy(&inp[(ip->inum-1)%IPB], ip->zone, sizeof(struct d_inode));
     ip->flag &= ~I_DIRTY;
     hd_sync(bp);
 }

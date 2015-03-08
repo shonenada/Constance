@@ -1,3 +1,7 @@
+#include <const.h>
+#include <system.h>
+#include <segment.h>
+#include <sched.h>
 #include <buf.h>
 #include <blk.h>
 
@@ -29,7 +33,7 @@ struct buf* get_buffer(uint dev, uint sector) {
                 p->flag |= B_BUSY;
                 return p;
             }
-            sleep(p);
+            sleep((uint) p);
             goto _loop;
         }
     }
@@ -44,6 +48,7 @@ struct buf* get_buffer(uint dev, uint sector) {
         }
     }
     panic("get_buffer: no buffers");
+    return NULL;
 }
 
 void del_buffer(struct buf *b) {

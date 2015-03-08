@@ -1,6 +1,7 @@
 #include <system.h>
 #include <segment.h>
 #include <asm.h>
+#include <sched.h>
 #include <buf.h>
 #include <blk.h>
 
@@ -35,6 +36,7 @@ int hd_start(struct buf *bp) {
     } else {
         hd_out(1, bp->sector, bp->dev, HD_CMD_READ);
     }
+    return 0;
 }
 
 // sync buffer with disk
@@ -45,7 +47,7 @@ int hd_sync(struct buf *b) {
 
     if (!(b->flag & B_BUSY))
         panic("hd_sync: Buffer is not busy");
-    if (b->flag & (B_VALID|B_DIRTY) == B_VALID)
+    if ((b->flag & (B_VALID|B_DIRTY)) == B_VALID)
         panic("hd_sync: synced");
     if (b->dev < 0)
         panic("hd_sync: device not set");
@@ -59,14 +61,15 @@ int hd_sync(struct buf *b) {
         hd_start(b);
 
     while((b->flag & (B_VALID|B_DIRTY)) != B_VALID)
-        sleep(b);
+        sleep((uint) b);
+    return 0;
 }
 
 int do_hd_intr(struct regs *rgs) {
     struct buf *b;
     if ((b = hdqueue) == 0) {
         // no device
-        return ;
+        return -1;
     }
     hdqueue = b->qnext;
     if (!(b->flag & B_DIRTY)) {
@@ -75,11 +78,12 @@ int do_hd_intr(struct regs *rgs) {
 
     b->flag |= B_VALID;
     b->flag &= ~B_BUSY;
-    wakeup(b);
+    wakeup((uint) b);
 
     if (hdqueue != 0) {
         hd_start(hdqueue);
     }
+    return 0;
 }
 
 void hd_init() {

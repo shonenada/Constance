@@ -1,8 +1,11 @@
 #include <const.h>
+#include <system.h>
 #include <asm.h>
+#include <sched.h>
 #include <inode.h>
 #include <fs.h>
 #include <buf.h>
+#include <blk.h>
 
 struct sblk mnt[NMOUNT] = { {0, }, };
 
@@ -104,10 +107,10 @@ int ialloc (ushort dev) {
         ino = i*BLK_SIZE + r;
         bp->data[ino/8] |= 1 << (ino%8);
         hd_sync(bp);
-        unlink_sb(bp);
+        unlink_sb(sbp);
         return ino;
     }
-    unlink_sb(bp);
+    unlink_sb(sbp);
     panic("no enough inode");
     return -1;
 }
@@ -126,11 +129,12 @@ int ifree (ushort dev, uint ino) {
     }
     bp->data[ino/8] &= ~(1<<(ino%8));
     hd_sync(bp);
-    unlink_sb(bp);
+    unlink_sb(sbp);
+    return 0;
 }
 
 // find free block by bitmap
-int find_free(char *bitmap, int size) {
+int find_free(uchar *bitmap, int size) {
     int byte, i, j;
     for (i=0;i<size;i++) {
         byte = bitmap[i];

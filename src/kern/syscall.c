@@ -6,8 +6,8 @@
 int errno = 0;
 
 static void* sys_routines[MAX_SYSCALL] = {
-    [__NR_nosys] = (uint)&sys_nosys,
-    [__NR_forks] = (uint)&sys_fork,
+    [__NR_nosys] = &sys_nosys,
+    [__NR_fork] = &sys_fork,
 };
 
 // System call

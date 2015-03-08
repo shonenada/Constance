@@ -7,6 +7,7 @@
 #define DIRSIZE 14
 #define NINDBLK (BLK_SIZE/sizeof(ushort))
 
+
 // define super block struct
 struct d_sblk {
     ushort ninodes;    // number of inodes
@@ -42,6 +43,8 @@ struct sblk {
 #define S_RDONLY 0x4
 #define S_DIRTY 0x8
 
+struct sblk mnt[NMOUNT];
+
 // define directory entry
 struct dire {
     ushort inode;
@@ -54,8 +57,8 @@ int bfree (ushort dev, uint nr);
 int bzero (ushort dev, uint bn);
 int ialloc (ushort dev);
 int ifree (ushort dev, uint ino);
-void unlink_sb(struct sblk *sb);
-int find_free(char *bitmap, int size);
+void unlink_sb(struct ksblk *sb);
+int find_free(uchar *bitmap, int size);
 
 // Inodes per block
 #define IPB (BLK_SIZE/SIZE_INODE)

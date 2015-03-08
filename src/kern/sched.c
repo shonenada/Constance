@@ -51,7 +51,7 @@ void sleep_on(struct ktask* task, uint channel) {
 
 void wakeup(uint channel) {
     struct ktask *t;
-    for (t=tasks;t<tasks+NTASKS;t++) {
+    for (t=tasks[0];t<&tasks[NTASKS];t++) {
         if (t->state == TASK_UNINTERRUPTIBLE && t->channel == channel) {
             t->channel = 0;
             t->state = TASK_RUNNING;

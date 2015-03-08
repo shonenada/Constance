@@ -1,4 +1,6 @@
 #include <const.h>
+#include <system.h>
+#include <console.h>
 #include <segment.h>
 #include <mm.h>
 
@@ -27,9 +29,11 @@ int do_page_fault(struct regs *rgs) {
 }
 
 int do_no_page(struct regs *rgs) {
+    return 0;
 }
 
 int do_wp_page(struct regs *rgs) {
+    return 0;
 }
 
 // alloc a page
