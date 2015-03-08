@@ -7,7 +7,7 @@
 #define DIRSIZE 14
 
 // define super block struct
-struct sblk {
+struct d_sblk {
     ushort ninodes;    // number of inodes
     ushort nzones;    // number of data zones
     ushort imap_blks;    // space used by inode map. (blocks)
@@ -20,7 +20,7 @@ struct sblk {
 };
 
 // define super block struct for memory
-struct m_sblk {
+struct sblk {
     ushort ninodes;    // number of inodes
     ushort nzones;    // number of data zones
     ushort imap_blks;    // space used by inode map. (blocks)
@@ -35,6 +35,11 @@ struct m_sblk {
     uint flag;
 };
 
+#define S_LOCK 0x1
+#define S_WANTED 0x2
+#define S_RDONLY 0x4
+#define S_DIRTY 0x8
+
 // define inode
 struct inode {
     ushort mode;
@@ -45,6 +50,7 @@ struct inode {
     uchar nlinks;
     ushort zone[9];
 };
+#define SIZE_INODE sizeof(struct dire)
 
 // define directory entry
 struct dire {
@@ -52,12 +58,22 @@ struct dire {
     char name[DIRSIZE];
 };
 
-
-struct m_sblk *getsblk(ushort dev);
+struct sblk *getsblk(ushort dev);
 int balloc (ushort dev);
-int bfree (ushort dev);
-int bzero (ushort dev);
+int bfree (ushort dev, uint nr);
+int bzero (ushort dev, uint bn);
 int ialloc (ushort dev);
-int ifree (ushort dev);
+int ifree (ushort dev, uint ino);
+void unlink_sb(struct sblk *sb);
+int find_free(char *bitmap, int size);
+
+// Inodes per block
+#define IPB (BLK_SIZE/SIZE_INODE)
+// Block containing block i
+#define IBLOCK(i) ((i) / IPB + 2)
+// Bitmap per block
+#define BPB (BLK_SIZE*8)
+
+#define BBLOCK(sp,nr) (((sp)->imap_blks) + ((nr)/BPB) + 2) 
 
 #endif

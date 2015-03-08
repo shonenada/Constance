@@ -10,7 +10,7 @@ struct buf {
     struct buf *prev;
     struct buf *next;
     struct buf *qnext;
-    uchar data[512];
+    uchar data[BLK_SIZE];
 };
 
 #define B_BUSY 0b1
