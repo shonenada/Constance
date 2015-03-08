@@ -1,5 +1,6 @@
 #include <const.h>
 #include <asm.h>
+#include <inode.h>
 #include <fs.h>
 #include <buf.h>
 

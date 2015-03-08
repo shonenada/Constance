@@ -5,6 +5,7 @@
 #define S_WANTED 0x2
 
 #define DIRSIZE 14
+#define NINDBLK (BLK_SIZE/sizeof(ushort))
 
 // define super block struct
 struct d_sblk {
@@ -33,24 +34,13 @@ struct sblk {
 
     ushort dev;
     uint flag;
+    struct inode * imnt;
 };
 
 #define S_LOCK 0x1
 #define S_WANTED 0x2
 #define S_RDONLY 0x4
 #define S_DIRTY 0x8
-
-// define inode
-struct inode {
-    ushort mode;
-    ushort uid;
-    unsigned long size;
-    unsigned long time;
-    uchar gid;
-    uchar nlinks;
-    ushort zone[9];
-};
-#define SIZE_INODE sizeof(struct dire)
 
 // define directory entry
 struct dire {
