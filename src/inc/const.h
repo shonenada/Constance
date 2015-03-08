@@ -19,6 +19,7 @@ typedef unsigned short ushort;
 #define NPAGE 1024
 #define BLK_SIZE 1024
 #define NBUF (0x200000/BLK_SIZE)
+#define NMOUNT 4
 
 #define NULL ((void*)0)
 
