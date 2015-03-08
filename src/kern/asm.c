@@ -16,3 +16,17 @@ inline void ltr(uint n) {
 inline void lldt(uint n) {
     asm volatile ("lldt %%ax"::"a"(n));
 }
+
+inline void insl(int port, void* addr, int cnt) {
+    asm volatile ("cld; rep insl" :
+                  "=D"(addr), "=c"(cnt) :
+                  "d"(port), "0" (addr), "1" (cnt) :
+                  "memory", "cc");
+}
+
+inline void outsl(int port, const void* addr, int cnt) {
+    asm volatile ("cld; rep outsl" : 
+                  "=S" (addr), "=c" (cnt) :
+                  "d" (port), "0" (addr), "1" (cnt) :
+                  "cc");
+}
