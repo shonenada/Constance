@@ -28,13 +28,13 @@ struct buf* get_buffer(uint dev, uint sector) {
                 p->flag |= B_BUSY;
                 return p;
             }
-            sleep((uint) p);
-            goto _loop
+            sleep(p);
+            goto _loop;
         }
     }
 
     // cache not found
-    for (p=buffer.head.prev;p!=buffer.head;p=p->prev) {
+    for (p=buffer.head.prev;p!=&buffer.head;p=p->prev) {
         if (!(p->flag & B_BUSY) == 0 && (p->flag & B_DIRTY) == 0) {
             p->dev = dev;
             p->sector = sector;

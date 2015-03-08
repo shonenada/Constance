@@ -9,7 +9,7 @@
 #define LDT0 (TSS0+1)
 #define LDT_SEL(n) ((n<<4)+(LDT0<<3))
 
-enum task_state {TASK_RUNNING, TASK_INTERRUPTIBLE, TASK_UNINTERRUPTIBLE, TASK_ZOMBLE, TASK_STOPPED}
+enum task_state {TASK_RUNNING, TASK_INTERRUPTIBLE, TASK_UNINTERRUPTIBLE, TASK_ZOMBLE, TASK_STOPPED};
 
 struct tss_entry {
     uint link;    // previous task link
@@ -62,10 +62,10 @@ extern struct ktask *current;
 extern struct ktask *tasks[NTASKS];
 
 void sched_init();
-void sleep();
-void sleep_on(struct ktask*);
-void wakeup();
-void wakeup_on(struct ktask*);
+void sleep(uint channel);
+void sleep_on(struct ktask*, uint channel);
+void wakeup(uint channel);
+void wakeup_on(struct ktask*, uint channel);
 void schedule();
 int find_empty();
 void switch_to(struct ktask* target);    // switch from current to target task
