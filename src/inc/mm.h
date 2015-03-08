@@ -19,7 +19,7 @@
 #define PD_INDEX(addr) ((uint)((addr>>0x16)&0x3FF))    // get page directory index by linear address, 10 bits
 #define PT_INDEX(addr) ((uint)((addr>>0x0C)&0x3FF))    // get page table index by linear address, 10 bits
 #define POFF(addr) ((uint)(addr&0xFFF))
-#define PTE_ADDR(addr) ((uint)(addr)& ~0xFFF)
+#define PTE_ADDR(addr) ((uint)(addr) & ~0xFFF)
 
 // bucket allocation
 struct bucket_desc {

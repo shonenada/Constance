@@ -18,7 +18,7 @@ typedef unsigned short ushort;
 #define NGDT (4+NTASKS+1)
 #define NPAGE 1024
 #define BLK_SIZE 1024
-#define NR_BUF (0x200000/BLK_SIZE)
+#define NBUF (0x200000/BLK_SIZE)
 
 #define NULL ((void*)0)
 
