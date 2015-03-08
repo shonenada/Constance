@@ -27,3 +27,5 @@ kernel.img: bin/boot.bin bin/kernel.bin
 clean: clean-boot clean-kernel
 	@rm -rf kernel.img
 
+todo:
+	@grep '// TODO' -rn .
