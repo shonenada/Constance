@@ -1,4 +1,5 @@
 #include <buf.h>
+#include <blk.h>
 
 struct {
     struct buf buf[NBUF];
@@ -64,7 +65,7 @@ struct buf* read_buffer(uint dev, uint sector) {
     struct buf* b;
     b = get_buffer(dev, sector);
     if (!(b->flag & B_VALID)) {
-        // TODO: blk read/write
+        hd_sync(b);
     }
     return b;
 }
@@ -73,6 +74,6 @@ void write_buffer(struct buf* b) {
     if ((b->flag & B_BUSY) == 0)
         panic("read_buffer: buffer busy");
     b->flag |= B_DIRTY;
-    // TODO: blk read/write
+    hd_sync(b);
 }
 
