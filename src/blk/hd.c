@@ -1,4 +1,5 @@
 #include <system.h>
+#include <segment.h>
 #include <asm.h>
 #include <buf.h>
 #include <blk.h>
@@ -28,7 +29,7 @@ int hd_out(int sector_num, int sector, int dev_no, int rw) {
 }
 
 int hd_start(struct buf *bp) {
-    if (bp->flag & B_DIRTY) {
+    if (bp->flag & B_DIRTY) {    // write
         hd_out(1, bp->sector, bp->dev, HD_CMD_WRITE);
         outsl(0x1F0, bp->data, 512/4);
     } else {
@@ -49,7 +50,7 @@ int hd_sync(struct buf *b) {
     if (b->dev < 0)
         panic("hd_sync: device not set");
 
-    b->queue = 0;
+    b->qnext = 0;
     for (p=&hdqueue;*p;p=&(*p)->next)
         ;
     *p = b;
@@ -59,4 +60,28 @@ int hd_sync(struct buf *b) {
 
     while((b->flag & (B_VALID|B_DIRTY)) != B_VALID)
         sleep(b);
+}
+
+int do_hd_intr(struct regs *rgs) {
+    struct buf *b;
+    if ((b = hdqueue) == 0) {
+        // no device
+        return ;
+    }
+    hdqueue = b->qnext;
+    if (!(b->flag & B_DIRTY)) {
+        insl(0x1F0, b->data, 512/4);
+    }
+
+    b->flag |= B_VALID;
+    b->flag &= ~B_BUSY;
+    wakeup(b);
+
+    if (hdqueue != 0) {
+        hd_start(hdqueue);
+    }
+}
+
+void hd_init() {
+    irq_install(0x2E, do_hd_intr);
 }

@@ -15,5 +15,7 @@
 
 int hd_ready();
 int hd_out();
+int do_hd_intr(struct regs *rgs);
+void hd_init();
 
 #endif

@@ -1,11 +1,13 @@
 #include <system.h>
 #include <const.h>
 #include <console.h>
+#include <asm.h>
 #include <segment.h>
 #include <mm.h>
 #include <time.h>
 #include <sched.h>
-#include <asm.h>
+#include <blk.h>
+
 
 void init() {
 }
@@ -19,6 +21,7 @@ void kmain() {
     page_init();
     keyboard_init();
     sched_init();
+    hd_init();
     sti();
 
     puts("Hello Constance!\n");

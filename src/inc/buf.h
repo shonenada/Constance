@@ -9,7 +9,7 @@ struct buf {
     uint sector;
     struct buf *prev;
     struct buf *next;
-    struct buf *queue;
+    struct buf *qnext;
     uchar data[512];
 };
 
