@@ -9,11 +9,7 @@
 #define LDT0 (TSS0+1)
 #define LDT_SEL(n) ((n<<4)+(LDT0<<3))
 
-#define TASK_RUNNING 0
-#define TASK_INTERRUPTIBLE 1
-#define TASK_UNINTERRUPTIBLE 2
-#define TASK_ZOMBLE 3
-#define TASK_STOPPED 4
+enum task_state {TASK_RUNNING, TASK_INTERRUPTIBLE, TASK_UNINTERRUPTIBLE, TASK_ZOMBLE, TASK_STOPPED}
 
 struct tss_entry {
     uint link;    // previous task link
@@ -51,10 +47,10 @@ struct ktask {
     long pid;
     long ppid;
     long pgrp;
-    long sessoin;
     long utime;
     long stime;
     long start_time;
+    uint channel;
     ushort uid, euid, suid;
     ushort gid, egid, sgid;
     uint ldt_sel;

@@ -28,36 +28,45 @@ void sched_init() {
     lldt(LDT_SEL(t->pid));
 }
 
-void sleep() {
+void sleep(uint channel) {
     cli();
     if (current == tasks[0]) {    // tasks[0] is init process
         panic("tasks[0] is trying to sleep");
     }
+    current->channel = channel;
     current->state = TASK_UNINTERRUPTIBLE;
     sti();
     schedule();
 }
 
-void sleep_on(struct ktask* task) {
+void sleep_on(struct ktask* task, uint channel) {
     cli();
     if (!task) {
         return;
     }
+    task->channel = channel;
     task->state = TASK_UNINTERRUPTIBLE;
-    sti();
-    schedule();
+    sti(); schedule();
 }
 
-void wakeup() {
-    wakeup(current);
+void wakeup(uint channel) {
+    struct ktask *t;
+    for (t=tasks;t<tasks+NTASKS;t++) {
+        if (p->state == TASK_UNINTERRUPTIBLE && p->channel == channel) {
+            p->channel = 0;
+            p->state = TASK_RUNNING;
+        }
+    }
 }
 
-void wakeup_on(struct ktask* task) {
+void wakeup_on(struct ktask* task, uint channel) {
     cli();
     if (!task) {
         return;
     }
-    task->state = TASK_RUNNING;
+    if (task->channel == channel) {
+        task->state = TASK_RUNNING;
+    }
     sti();
 }
 

@@ -28,7 +28,7 @@ struct buf* get_buffer(uint dev, uint sector) {
                 p->flag |= B_BUSY;
                 return p;
             }
-            // TODO: sleep
+            sleep((uint) p);
             goto _loop
         }
     }
@@ -57,7 +57,7 @@ void del_buffer(struct buf *b) {
     buffer.head.next = b;
     b->flag &= ~B_BUSY;
 
-    // TODO: wakeup
+    wakeup((uint) b);
 }
 
 struct buf* read_buffer(uint dev, uint sector) {
