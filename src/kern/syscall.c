@@ -1,6 +1,7 @@
 #include <system.h>
 #include <console.h>
 #include <segment.h>
+#include <sched.h>
 #include <unistd.h>
 
 int errno = 0;
@@ -30,6 +31,11 @@ int do_syscall(struct regs *rgs) {
         }
     }
     return 0;
+}
+
+int syserr(int eno) {
+    current->error = eno;
+    return -1;
 }
 
 int sys_nosys(struct regs* rgs) {

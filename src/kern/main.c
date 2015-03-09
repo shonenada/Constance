@@ -22,6 +22,7 @@ void kmain() {
     keyboard_init();
     sched_init();
     hd_init();
+    tty_init();
     sti();
 
     puts("Hello Constance!\n");

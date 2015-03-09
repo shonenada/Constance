@@ -16,5 +16,6 @@ char *strncpy (char *dst, const char *src, uint cnt);
 char* strchr(const char *str, char c);
 
 void panic(const char* s);
+int syserr(int eno);
 
 #endif
