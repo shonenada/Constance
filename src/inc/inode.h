@@ -19,7 +19,7 @@ struct inode {
     ushort mode;
     ushort uid;
     unsigned long size;
-    unsigned long time;
+    unsigned long mtime;
     uchar gid;
     uchar nlinks;
     ushort zone[9];
@@ -28,6 +28,8 @@ struct inode {
     ushort idev;
     ushort inum;
     ushort flag;
+    ushort atime;
+    ushort ctime;
 };
 #define SIZE_INODE sizeof(struct inode)
 
@@ -41,5 +43,13 @@ struct inode {
 
 void iupdate(struct inode *ip);
 int iload(struct inode *ip);
+int iput(struct inode *ip);
+struct inode* iget(uint dev, uint num);
+int itrunc(struct inode* ip);
+int iunlink(struct inode *ip);
+int lock_inode(struct inode *ip);
+int unlink_inode(struct inode *ip);
+
+extern struct inode inodes[NINODE];
 
 #endif

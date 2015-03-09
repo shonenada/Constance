@@ -1,6 +1,9 @@
 #ifndef __BLK_H
 #define __BLK_H
 
+#include <sched.h>
+#include <buf.h>
+
 #define HD_BUSY 0x80
 #define HD_READ 0x40
 #define HD_DF 0x20
