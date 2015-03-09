@@ -61,6 +61,7 @@ struct ktask {
     ushort uid, euid, suid;
     ushort gid, egid, sgid;
     uint ldt_sel;
+    uint error;
     struct sigact sigacts[NSIG];
     struct seg_desc ldts[NLDT];
     struct stackframe regs;
