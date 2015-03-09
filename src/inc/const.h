@@ -22,6 +22,7 @@ typedef unsigned short ushort;
 #define NMOUNT 4
 #define NFILE 64
 #define NOFILE 64
+#define NTTY 4
 
 #define NULL ((void*)0)
 
