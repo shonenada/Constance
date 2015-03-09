@@ -1,10 +1,12 @@
 #include <const.h>
 #include <system.h>
+#include <asm.h>
 #include <sched.h>
 #include <fs.h>
 #include <inode.h>
 #include <buf.h>
 #include <blk.h>
+#include <stat.h>
 
 struct inode inodes[NINODE];
 
@@ -81,4 +83,91 @@ void iupdate(struct inode *ip) {
     memcpy(&inp[(ip->inum-1)%IPB], ip->zone, sizeof(struct d_inode));
     ip->flag &= ~I_DIRTY;
     hd_sync(bp);
+}
+
+int iput(struct inode *ip) {
+    ushort dev;
+
+    if (ip == NULL) {
+        panic("iput: wrong inode");
+    }
+    ip->flag |= I_LOCK;
+    if (ip->count > 0) {
+        ip->count--;
+    }
+    if (ip->count == 0) {
+        if (ip->nlinks == 0) {
+            itrunc(ip);
+            ifree(ip->idev, ip->inum);
+        }
+        dev = ip->zone[0];
+        switch (ip->mode & S_IFMT) {
+            case S_IFBLK:
+                // TODO
+                break;
+            case S_IFCHR:
+                // TODO
+                break;
+        }
+        iupdate(ip);
+        ip->flag = 0;
+        ip->inum = 0;
+    }
+    iunlink(ip);
+    return 0;
+}
+
+int iunlink(struct inode *ip) {
+    cli();
+    if (ip->flag & I_WANTED) {
+        wakeup((uint) ip);
+    }
+    ip->flag &= ~(I_LOCK | I_WANTED);
+    sti();
+    return 0;
+}
+
+int itrunc(struct inode* ip) {
+    int i;
+    uint *tmp;
+    struct buf *bp;
+
+    for(i=0;i<7;i++) {
+        if (ip->zone[i]) {
+            bfree(ip->idev, ip->zone[i]);
+            ip->zone[i] = 0;
+        }
+    }
+
+    if (ip->zone[7]) {
+        bp = read_buffer(ip->idev, ip->zone[7]);
+        tmp = (uint *) bp->data;
+        for (i=0;i<NINDBLK;i++) {
+            if (tmp[i]) {
+                bfree(ip->idev, tmp[i]);
+            }
+        }
+        bfree(ip->idev, ip->zone[7]);
+    }
+    ip->size = 0;
+    iupdate(ip);
+    return 0;
+}
+
+int lock_inode(struct inode *ip) {
+    while (ip->flag & I_LOCK) {
+        sleep((uint) ip);
+    }
+    ip->flag |= I_LOCK;
+    return 0;
+}
+
+int unlink_inode(struct inode *ip) {
+    cli();
+    if (ip->flag & I_WANTED) {
+        wakeup((uint) ip);
+    }
+    ip->flag &= ~(I_LOCK | I_WANTED);
+    sti();
+    return 0;
 }

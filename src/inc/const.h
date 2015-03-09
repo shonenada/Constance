@@ -20,6 +20,8 @@ typedef unsigned short ushort;
 #define BLK_SIZE 1024
 #define NBUF (0x200000/BLK_SIZE)
 #define NMOUNT 4
+#define NFILE 64
+#define NOFILE 64
 
 #define NULL ((void*)0)
 

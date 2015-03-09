@@ -35,6 +35,10 @@ void unlink_sb(struct sblk *sb) {
     sti();
 }
 
+void putsp(struct sblk* sbp) {
+    unlink_sb(sbp);
+}
+
 // alloc block
 int balloc (ushort dev) {
     struct sblk *sbp;
@@ -148,4 +152,31 @@ int find_free(uchar *bitmap, int size) {
         }
     }
     return -1;
+}
+
+int sblk_load(struct sblk *sbp) {
+    struct buf *bp;
+    bp = read_buffer(sbp->dev, 1);
+    if ((bp->flag & B_ERROR) != 0) {
+        panic("sblk_load: disk read error");
+        return -1;
+    }
+
+    memcpy(sbp, bp->data, sizeof(struct d_sblk));
+
+    del_buffer(bp);
+    if (sbp->magic != S_MAGIC) {
+        panic("sblk_load: inavailible device");
+        return -1;
+    }
+    sbp->imnt = NULL;
+    return 0;
+}
+
+int sblk_update(struct sblk *sbp) {
+    struct buf *bp;
+    bp = getsblk(sbp->dev);
+    memcpy(bp->data, (char*) sbp, sizeof(struct d_sblk));
+    hd_sync(bp);
+    return 0;
 }

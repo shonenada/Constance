@@ -18,15 +18,28 @@
 #define SIGALRM 15    // Alarm, Abort
 #define SIGTERM 16    // Terminate, Abort
 #define SIGSTKFLT 17    // Stack fault on coprocessor, Abort
-#define SIGSIGHLD 18    // Child, Ignore 
+#define SIGHLD 18    // Child, Ignore 
 #define SIGCONT 19    // Continue, Continue
 #define SIGSTOP 20    // Stop, Stop
 #define SIGTSTP 21    // Terminal Stop, Stop
 #define SIGTTIN 22    // TTY Input on Background, Stop
 #define SIGTTOU 23    // TTY Output on Background, Stop
 
-#define NR_SIG 23
+#define NSIG 32
+
+#define SIG_DFL ((void (*)(int))0)
+#define SIG_IGN ((void (*)(int))1)
+
+#define SIG_NOMASK 0x40000000
+#define SIG_ONESHOT 0x80000000
 
 int sendsig(uint pid, uint sig_no);
+
+struct sigact {
+    void (*handler)(int);
+    uint mask;
+    int flags;
+    void (*restorer)();
+};
 
 #endif

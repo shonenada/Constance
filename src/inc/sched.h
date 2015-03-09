@@ -3,6 +3,10 @@
 
 #include <const.h>
 #include <segment.h>
+#include <inode.h>
+#include <stat.h>
+#include <file.h>
+#include <sig.h>
 
 #define TSS0 0x5
 #define TSS_SEL(n) ((n<<4)+(TSS0<<3))    // offset of tss in GDT, size of descriptor = 8 bytes
@@ -43,7 +47,10 @@ struct ktask {
     int state;     // state of this task
     long counter;    // running time
     long priority;
-    long signal;
+    uint ret;
+    uint signal;
+    uint sigmask;
+    uint cursig;
     long pid;
     long ppid;
     long pgrp;
@@ -54,8 +61,13 @@ struct ktask {
     ushort uid, euid, suid;
     ushort gid, egid, sgid;
     uint ldt_sel;
+    struct sigact sigacts[NSIG];
     struct seg_desc ldts[NLDT];
     struct stackframe regs;
+    struct file *files[NOFILE];
+    uint fdflag[NOFILE];
+    struct inode *wdir;
+    struct inode *iroot;
 };
 
 extern struct ktask *current;

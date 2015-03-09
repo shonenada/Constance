@@ -7,7 +7,6 @@
 #define DIRSIZE 14
 #define NINDBLK (BLK_SIZE/sizeof(ushort))
 
-
 // define super block struct
 struct d_sblk {
     ushort ninodes;    // number of inodes
@@ -38,6 +37,8 @@ struct sblk {
     struct inode * imnt;
 };
 
+#define S_MAGIC 0x138F
+
 #define S_LOCK 0x1
 #define S_WANTED 0x2
 #define S_RDONLY 0x4
@@ -57,8 +58,17 @@ int bfree (ushort dev, uint nr);
 int bzero (ushort dev, uint bn);
 int ialloc (ushort dev);
 int ifree (ushort dev, uint ino);
-void unlink_sb(struct ksblk *sb);
+void unlink_sb(struct sblk *sb);
 int find_free(uchar *bitmap, int size);
+int sblk_load(struct sblk *sbp);
+int sblk_update(struct sblk *sbp);
+void putsp(struct sblk* sbp);
+uint bmap(struct inode *ip, uint bn);
+int do_read(int fd, char* buf, int cnt);
+int do_write(int fd, char *buf, int cnt);
+int do_lseek(uint fd, int off, int whence);
+int readi(struct inode *ip, char *buf, uint off, uint cnt);
+int writei(struct inode* ip, char *buf, uint off, uint cnt);
 
 // Inodes per block
 #define IPB (BLK_SIZE/SIZE_INODE)
@@ -68,5 +78,13 @@ int find_free(uchar *bitmap, int size);
 #define BPB (BLK_SIZE*8)
 
 #define BBLOCK(sp,nr) (((sp)->imap_blks) + ((nr)/BPB) + 2) 
+
+#define NAMELEN 12
+
+#define DEVNO(major,minor) ((ushort)(((uchar)major<<8)+(uchar)minor))
+#define NODEV (DEVNO(0,0))
+ushort rootdev;
+
+#define min(a,b) (a>b?b:a)
 
 #endif
