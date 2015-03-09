@@ -69,6 +69,7 @@ int do_write(int fd, char *buf, int cnt);
 int do_lseek(uint fd, int off, int whence);
 int readi(struct inode *ip, char *buf, uint off, uint cnt);
 int writei(struct inode* ip, char *buf, uint off, uint cnt);
+struct sblk* do_mount(ushort dev, struct inode *ip);
 
 // Inodes per block
 #define IPB (BLK_SIZE/SIZE_INODE)
