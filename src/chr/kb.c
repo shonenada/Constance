@@ -1,56 +1,80 @@
 #include <system.h>
 #include <segment.h>
 #include <console.h>
+#include <keybd.h>
 
-unsigned char kbdus[128] = {
-    0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
-  '9', '0', '-', '=', '\b',	/* Backspace */
-  '\t',			/* Tab */
-  'q', 'w', 'e', 'r',	/* 19 */
-  't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',		/* Enter key */
-    0,			/* 29   - Control */
-  'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',	/* 39 */
- '\'', '`',   0,		/* Left shift */
- '\\', 'z', 'x', 'c', 'v', 'b', 'n',			/* 49 */
-  'm', ',', '.', '/',   0,					/* Right shift */
-  '*',
-    0,	/* Alt */
-  ' ',	/* Space bar */
-    0,	/* Caps lock */
-    0,	/* 59 - F1 key ... > */
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,	/* < ... F10 */
-    0,	/* 69 - Num lock*/
-    0,	/* Scroll Lock */
-    0,	/* Home key */
-    0,	/* Up Arrow */
-    0,	/* Page Up */
-  '-',
-    0,	/* Left Arrow */
-    0,
-    0,	/* Right Arrow */
-  '+',
-    0,	/* 79 - End key*/
-    0,	/* Down Arrow */
-    0,	/* Page Down */
-    0,	/* Insert Key */
-    0,	/* Delete Key */
-    0,   0,   0,
-    0,	/* F11 Key */
-    0,	/* F12 Key */
-    0,	/* All other keys are undefined */
-};
+static uint mode = 0;
 
-int keyboard_handler(struct regs *rgs) {
-    uchar kbcode;
+/**
+ * Detects status of shift, ctrl, alt and capslock
+ *
+ */ 
+uchar translate(char chr) {
+    char ch = chr & 0x7F;    // 0b01111111
 
-    kbcode = inportb(0x60);    // Read from data buffer of keyboard
-
-    if (kbcode & 0x80) {
-        // release shift, alt, ctrl
+    if (mode & E0SC) {
+        switch (ch) {
+            case 0x1D:    // ctrl press 
+                return CTRL;
+            case 0x38:    // alt press 
+                return ALT;
+        }
     } else {
-        // just putch;
-        putch(kbdus[kbcode]);
+        switch (ch) {
+            case 0x2A:    // left shift press
+            case 0x36:    // right shift press
+                return SHIFT;
+            case 0x1D:    // left ctrl press
+                return CTRL;
+            case 0x38:    // left alt press
+                return ALT;
+        }
+    }
+    return 0;
+}
+
+/**
+ * Interrupt Service Routinue for keyboard
+ * Scan codes refer to http://wiki.osdev.org/PS/2_Keyboard
+ */
+int keyboard_handler(struct regs *rgs) {
+    uchar kbcode, mask, chr;
+    uchar *map;
+
+    kbcode = inportb(KB_DATA);    // Read from data buffer of keyboard
+
+    // 0x3A, Cap Lock pressed
+    if ((kbcode & 0x7F) == 0x3A) {
+        return 0;
+    }
+
+    // some extended key hold 2 ~ 4 bytes scan code
+    if (kbcode == 0xE0) {
+        mode |= E0SC;
+    }
+
+    if ((mask = translate(kbcode))) {
+        if (kbcode & 0x80) {
+            // Release a key
+            mode &= ~mask;
+        } else {
+            mode |= mask;
+        }
+        return 0;
+    }
+
+    map = (mode & SHIFT) ? shift_key_map : key_map;
+
+    chr = map[kbcode & 0x7F];
+    
+    if (mode & CTRL) {
+        // TODO: send signal
+    }
+
+    if (!(kbcode & 0x80)) {
+        putch(map[kbcode]);
+    } else {
+        mode &= ~E0SC;
     }
     return 0;
 }
