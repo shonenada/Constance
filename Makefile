@@ -5,6 +5,7 @@ CFLAGS := -Wall -nostdinc -fno-builtin -fno-stack-protector \
 
 include build/boot.mk
 include build/kern.mk
+include build/rootfs.mk
 
 boot: boot.img
 
