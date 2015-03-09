@@ -22,6 +22,17 @@ int sendsig(uint pid, uint sig_no) {
     return 0;
 }
 
+int sendsig_g(uint grp, uint sig_no) {
+    int i;
+    struct ktask *tk;
+    for (i=0;i<NTASKS;i++) {
+        if ((tk = tasks[i]) && tk->pgrp == grp) {
+            sendsig(tk->pid, sig_no);
+        }
+    }
+    return 0;
+}
+
 /**
  * Check whether current task gets some signals.
  */

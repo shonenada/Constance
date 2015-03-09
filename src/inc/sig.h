@@ -34,6 +34,7 @@
 #define SIG_ONESHOT 0x80000000
 
 int sendsig(uint pid, uint sig_no);
+int sendsig_g(uint pgrd, uint sig_no);    // send to group
 
 struct sigact {
     void (*handler)(int);
