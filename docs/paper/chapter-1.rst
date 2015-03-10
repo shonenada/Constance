@@ -134,6 +134,11 @@
 1.3.2 nasm
     
     操作系统的 Bootloader 开发时，需要使用汇编语言，因此需要一个汇编编译器。本文开发环境下的汇编器选择 NASM，选择原因是该编译器的汇编语言更接近本科教育中所学的语法。
+    nasm 编译器的编译命令为：（以编译 bootloader 为例）
+
+	nasm src/boot/boot.asm -f elf -o bin/boot.o
+
+    其中 -f elf 表示，输出格式为 elf 格式，-o 表示编译结果输出到 bin/bott.o。
 
 1.3.3 gcc
 
