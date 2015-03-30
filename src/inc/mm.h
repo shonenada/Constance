@@ -39,6 +39,7 @@ struct bk_dir {
 };
 
 extern struct bucket_desc free_bk_desc_chain;
+extern struct bk_dir bucket_dir[];
 
 // set cr3 to be the base address of page directory
 extern void flush_cr3();

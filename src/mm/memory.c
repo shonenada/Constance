@@ -29,7 +29,7 @@ void* kmalloc(uint size) {
         panic("kmalloc(): wrong size");
     }
     bk = bh = &bucket_dir[sn];
-    size = bh->size;
+    size = bh->bk_size;
     if (size == PAGE_SIZE) {
         page = palloc();
         return (void*)page;
