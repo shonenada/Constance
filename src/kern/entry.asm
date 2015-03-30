@@ -36,6 +36,7 @@ page_enable:
  ret
 
 [section .text]
+[global _int_common_ret]
 ;; hardware interrupt common stub,
 ;;  saves processor state, sets up for kernel mode segments,
 ;;  calls fault handler, finally restore stack
@@ -58,6 +59,7 @@ int_common_hdl:
   call eax
   ;; restore state
   pop eax
+_int_common_ret:
   pop gs
   pop fs
   pop es

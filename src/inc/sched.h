@@ -15,6 +15,11 @@
 
 enum task_state {TASK_RUNNING, TASK_INTERRUPTIBLE, TASK_UNINTERRUPTIBLE, TASK_ZOMBLE, TASK_STOPPED};
 
+struct context_buf {
+    int eip, esp, ebx, ecx, edx, esi, edi, ebp;
+    uint __sigmask;
+};
+
 struct tss_entry {
     uint link;    // previous task link
     uint esp0;
@@ -36,11 +41,6 @@ struct tss_entry {
     ushort ldt, __9;
     ushort trap, io_base;
 } __attribute__ ((packed));
-
-struct stackframe {
-    uint gs, fs, es, ds, edi, esi, ebp, kernel_esp;
-    uint ebx, edx, ecx, eax, retaddr, eip, cs, eflags, esp, ss;
-};
 
 // define data struct for task
 struct ktask {
@@ -64,13 +64,16 @@ struct ktask {
     uint error;
     struct sigact sigacts[NSIG];
     struct seg_desc ldts[NLDT];
-    struct stackframe regs;
+    struct regs *rgs;
     struct file *files[NOFILE];
     uint fdflag[NOFILE];
     struct inode *wdir;
     struct inode *iroot;
+    struct context_buf context;
 };
 
+extern struct tss_entry tss;
+extern struct ktask task0;
 extern struct ktask *current;
 extern struct ktask *tasks[NTASKS];
 

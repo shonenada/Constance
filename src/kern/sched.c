@@ -100,7 +100,7 @@ void switch_to(struct ktask* target) {
         "pop %%es;"\
         "pop %%ds;"\
         "popa;"\
-        "add %%esp, 8;"::"a"(&target->regs));
+        "add %%esp, 8;"::"a"(&target->rgs));
 }
 
 int find_empty() {

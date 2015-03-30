@@ -4,23 +4,6 @@
 #include <segment.h>
 #include <mm.h>
 
-uint *pdir = (uint *) 0x10000;
-uint *ptab = (uint *) 0x1D000;
-
-uchar page_map[NPAGE] = {0,};
-struct bucket_desc *free_bk_desc_chain = (struct bucket_desc*) 0;
-struct bk_dir bucket_dir[] = {
-    {16, (struct bk_dir*) 0},
-    {32, (struct bk_dir*) 0},
-    {64, (struct bk_dir*) 0},
-    {128, (struct bk_dir*) 0},
-    {256, (struct bk_dir*) 0},
-    {512, (struct bk_dir*) 0},
-    {1024, (struct bk_dir*) 0},
-    {2048, (struct bk_dir*) 0},
-    {4096, (struct bk_dir*) 0},
-    {0, (struct bk_dir*) 0}};
-
 int do_page_fault(struct regs *rgs) {
     uint cr2;
     asm volatile ("movl %%cr2, %0":"=a"(cr2));
@@ -36,43 +19,24 @@ int do_wp_page(struct regs *rgs) {
     return 0;
 }
 
-// alloc a page
-uint palloc() {
-    int i;
-    for (i=0;i<NPAGE;i++) {
-        if (page_map[i] == 0) {
-            page_map[i]++;
-            return (LO_MEM + (i * PAGE_SIZE));
-        }
-    }
-    panic("palloc(): no enough page");
-    return -1;
-}
+void* kmalloc(uint size) {
+    int sn;
+    uint page;
+    struct bucket_desc *bk, *bh;
 
-uint pfree(uint addr) {
-    int i;
-    i = (addr - LO_MEM) / PAGE_SIZE;
-    if (page_map[i] > 0) {
-        page_map[i]--;
-        return i;
+    sn = bkslot(size);
+    if (sn < 0) {
+        panic("kmalloc(): wrong size");
     }
-    return -1;
-}
+    bk = bh = &bucket_dir[sn];
+    size = bh->size;
+    if (size == PAGE_SIZE) {
+        page = palloc();
+        return (void*)page;
+    }
 
-// addr: linear address
-// phyaddr: physical address
-int map_page(uint addr, uint phyaddr, uint flag) {
-    uint pde = pdir[PD_INDEX(addr)];
-    if (!(pde & PTE_P)) {     //
-        pde = palloc();
-        if (pde < 0)
-            panic("map_page(): no enough page");
-        pdir[PD_INDEX(addr)] = pde | PTE_P | PTE_RW | PTE_U;
+    while((bk=bk->next) != NULL) {
     }
-    uint *ptab = (uint *) PTE_ADDR(pde);
-    ptab[PT_INDEX(addr)] = phyaddr | flag;
-    page_map[phyaddr/0x1000]++;
-    return 0;
 }
 
 // setup paging

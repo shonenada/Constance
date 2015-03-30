@@ -21,6 +21,9 @@
 #define POFF(addr) ((uint)(addr&0xFFF))
 #define PTE_ADDR(addr) ((uint)(addr) & ~0xFFF)
 
+extern uint *pdir;
+extern uint *ptab;
+
 // bucket allocation
 struct bucket_desc {
     void *page;
@@ -35,15 +38,16 @@ struct bk_dir {
     struct bucket_desc *chain;
 };
 
-struct bucket_desc *free_bk_desc_chain;
+extern struct bucket_desc free_bk_desc_chain;
 
 // set cr3 to be the base address of page directory
 extern void flush_cr3();
 // set cr0(PG) to the 1, enable paging
 extern void page_enable();
 
+int bkslot(uint size);
 void page_init();
-void kmalloc();
+void* kmalloc();
 uint palloc();
 uint pfree(uint addr);
 int do_page_fault(struct regs *rgs);

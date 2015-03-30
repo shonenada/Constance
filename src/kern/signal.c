@@ -64,7 +64,7 @@ int issig() {
  */
 int do_sig() {
     uint sig;
-    struct stackframe *sf;
+    struct regs *sf;
     struct sigact *sa;
 
     void *ufunc;
@@ -81,7 +81,7 @@ int do_sig() {
     current->cursig = 0;
 
     if (sa->handler != SIG_DFL) {
-        sf = &(current->regs);
+        sf = &(current->rgs);
         //
         if ((sa->flags & SIG_NOMASK) == 0) {
             current->sigmask |= sa->mask;

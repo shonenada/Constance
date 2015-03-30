@@ -12,6 +12,7 @@ typedef unsigned short ushort;
 #define KERN_DS 0x10
 #define USER_CS 0x18
 #define USER_DS 0x20
+#define KSTACK0 0x1000
 
 #define NLDT 3
 #define NTASKS 64    // Max process numbers
