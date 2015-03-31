@@ -2,104 +2,100 @@
 #include <const.h>
 #include <asm.h>
 #include <mm.h>
-#include <sched.h>
+#include <page.h>
 
-struct pde pgd0[1024];
+struct pde pgd0[NPGD];
 
-struct pte* find_pte(struct pde* pgd, uint vaddr, uint creat) {
-    uint page;
+struct pte* pte_find(struct pde* pgd, uint vaddr) {
+    uint pdx, ptx;
     struct pde *pde;
-    struct pte *pt;
-
-    if (vaddr < KMEM_END) {
-        panic("find_pte(): cannot access kernel space");
-    }
-
-    pde = &(pgd[PD_INDEX(vaddr)]);
-    if ((pde->flag & PTE_P) == 0) {
-        if (creat == 0) {
-            return NULL;
-        }
-        page = palloc();
-        pde->flag = PTE_P | PTE_U | PTE_RW;
-        pde->off = page;
-        pt = (struct pte*) (page);
-        memset(pt, 0, PAGE_SIZE);
-        flmmu();
-    }
-    pt = (struct pte*)(pde->off);
-    return &pt[PT_INDEX(vaddr)];
-}
-
-int pgd_init(struct pde *pgd) {
-    uint pn;
-
-    for (pn=0;pn<PMEM/(PAGE_SIZE*1024);pn++) {
-        pgd[pn].off = pn << 10;
-        pgd[pn].flag = PTE_PS | PTE_P | PTE_RW;
-    }
-    for(pn=PMEM/(PAGE_SIZE*1024);pn<1024;pn++) {
-        pgd[pn].off = 0;
-        pgd[pn].flag = PTE_U;
-    }
-    return 0;
-}
-
-int pt_copy(struct pde *npgd, struct pde *opgd) {
-    /**
-    uint page, pdn, pn;
-    struct pde *opde, *npde;
-    struct pte *opte, *npte, *old_pt, *new_pt;
-
-    for (pdn=PD_INDEX(KMEM_END);pdn<1024;pdn++) {
-        opde = &opgd[pdn];
-        npde = &npgd[pdn];
-        pnde->flag = opde->flag;
-        if (opde->flag & PTE_P) {
-            old_pt = (struct pte*)(opde->off * PAGE_SIZE);
-            new_pt = (struct pte*)kmalloc(PAGE_SIZE);
-            npde->off = PPN(new_pt);
-            for(pn=0;pn<1042; pn++) {
-                opte = &old_pt[pn];
-                npte = &new_pt[pn];
-                npte->off = opte->off;
-                npte->flag = opte->flag;
-                if (opte->flag & PTE_P) {
-                    npte->flag &= ~PTE_W;
-                    npte->flag &= ~PTE_W;
-                    pg = pgfind(opte->off);
-                    pg->count++;
-                }
-            }
-        }
-    }
-    return 0;
-    **/
-}
-
-int pt_free(struct pde *pgd) {
-    uint pdn, pn;
-    struct pde *pde;
-    struct pte *pte, *pt;
+    struct pte *pte;
     struct page *pg;
 
-    for(pdn=PD_INDEX(KMEM_END);pdn<1024;pdn++) {
-        pde = &pgd[pdn];
-        if (pde->flag & PTE_P) {
-            pt = (struct pte *)(pde->off * PAGE_SIZE);
+    pdx = PD_INDEX(vaddr);
+    pde = &pgd[pdx];
+
+    if ((pde->flag & PTE_P) == 0) {
+        pg = palloc();
+        pde->flag = PTE_P | PTE_U | PTE_RW;
+        pde->ppn = pg->idx;
+        pte = (struct pte *)(pde->ppn * PAGE_SIZE);
+        memset(pt, 0, PAGE_SIZE);
+        flush_pgd();
+    }
+
+    pte = (struct pte*)(pde->ppn * PAGE_SIZE);
+    return &pte[PT_INDEX(vaddr)];
+}
+
+void pgd_init(struct pde *pd) {
+    uint pn;
+    for (pn=0;pn<1;pn++) {
+        pd[pn].ppn = pn * PAGE_SIZE;
+        pd.flag = PTE_P | PTE_RW;
+    }
+    for (pn=1;pn<NPGD;pn++) {
+        pd[pn].ppn = 0;
+        pd.flag = PTE_U;
+    }
+}
+
+int pgd_copy(struct pde *to_pd, struct pde *from_pd) {
+    uint idx, pn;
+    struct page *pg, *fpg;
+    struct pde *to_pde, *from_pde;
+    struct pte *to_pt, *from_pt, *to_pte, *from_pte;
+
+    for (idx=0;idx<NPGD;idx++) {
+        from_pde = &from_pd[idx];
+        to_pde = &to_pd[idx];
+        to_pde->flag = from_pde->flag;
+        if (from_pde->flag * PTE_P) {
+            from_pt = (struct pte*)(from_pde->ppn * PAGE_SIZE);
+            pg = palloc();
+            to_pt = (struct pte*)(pg->idx * PAGE_SIZE);    // linear address
+            to_pd->ppn = PPN(to_pt);
             for (pn=0;pn<1024;pn++) {
-                pte = &pt[pn];
-                if (pte->flag & PTE_P) {
-                    pg = pgfind(pte->off);
-                    pgfree(pg);
+                from_pte = &from_pt[pn];
+                to_pte = &to_pt[pn];
+                to_pte->ppn = from_pte->ppn;
+                to_pte->flag = from_pte->flag;
+                if (from_pte->flag & PTE_P) {
+                    from_pte->flag &= ~PTE_P;
+                    to_pte->flag &= ~PTE_P;
+                    fpg = pfind(from_pte->ppn);
+                    fpg->count++;
                 }
             }
-            kfree(pt, PAGE_SIZE);
         }
     }
     return 0;
 }
 
-void flmmu() {
-    lpgd(current->tvm.pd);
+int pgd_free(struct pde* pgd) {
+    uint idx, ptn;
+    struct pde *pde;
+    struct pte *pt, *pte;
+    struct page *page;
+
+    for(idx=0;idx<1024;idx++) {
+        pde = pgd[idx];
+        if (pde->flag & PTE_P) {
+            pt = (struct pte*)(pde->ppn * PAGE_SIZE);
+            for (ptn=0;ptn<1024;ptn++) {
+                pte = &pt[ptn];
+                if (pte->flag & PTE_P) {
+                    page = pfind(pte->ppn);
+                    pfree(page);
+                }
+            }
+            page = pfind(PPN(pt));
+            pfree(page);
+        }
+    }
+    return 0;
+}
+
+void flush_pgd() {
+    lpgd(current->tvm.pgd);
 }

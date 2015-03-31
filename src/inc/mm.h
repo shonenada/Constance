@@ -20,6 +20,7 @@
 #define PT_INDEX(addr) ((uint)((addr>>0x0C)&0x3FF))    // get page table index by linear address, 10 bits
 #define POFF(addr) ((uint)(addr&0xFFF))
 #define PTE_ADDR(addr) ((uint)(addr) & ~0xFFF)
+#define PPN(addr) (((uint)(addr)) >> 0x0C)
 
 extern uint *pdir;
 extern uint *ptab;
@@ -39,26 +40,18 @@ struct bk_dir {
 };
 
 struct pde {
-    uint off:20;
+    uint ppn:20;
     uint flag:9;
     uint avl:3;
 };
 
 struct pte {
-    uint off:20;
+    uint ppn:20;
     uint flag:9;
     uint avl:3;
 };
 
-struct page {
-    uchar flag;
-    uchar count;
-    ushort num;
-    struct page *next;
-};
-
 extern struct pde pgd0[];
-
 extern struct bucket_desc free_bk_desc_chain;
 extern struct bk_dir bucket_dir[];
 
@@ -68,12 +61,15 @@ extern void flush_cr3();
 extern void page_enable();
 
 int bkslot(uint size);
-void page_init();
 void* kmalloc();
-uint palloc();
-uint pfree(uint addr);
 int do_page_fault(struct regs *rgs);
 int do_no_page(struct regs *rgs);
 int do_wp_page(struct regs *rgs);
+
+struct pte* pte_find(struct pde* pgd, uint vaddr, uint creat);
+void pgd_init(struct pde *pgd);
+int pgd_copy(struct pde *to, struct pde *from);
+int pgd_free(struct pde *pgd);
+void flush_pgd();
 
 #endif

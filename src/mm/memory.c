@@ -3,6 +3,7 @@
 #include <console.h>
 #include <segment.h>
 #include <mm.h>
+#include <page.h>
 
 int do_page_fault(struct regs *rgs) {
     uint cr2;
@@ -37,24 +38,4 @@ void* kmalloc(uint size) {
 
     while((bk=bk->next) != NULL) {
     }
-}
-
-// setup paging
-void page_init() {
-    int i;
-    uint addr = 0;
-    for(i=0;i<NPAGE;i++) {
-        ptab[i] = (addr | PTE_P | PTE_RW | PTE_U);
-        addr += PAGE_SIZE;    // 4kb each page
-    }
-    for(i=0;i<NPAGE;i++)
-        pdir[i] = 0 | PTE_RW;
-
-    // first entry
-    pdir[0] = ((uint) ptab) | PTE_P | PTE_RW | PTE_U;
-
-    irq_install(0x0E, do_page_fault);
-
-    flush_cr3();
-    page_enable();
 }
