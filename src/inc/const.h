@@ -27,4 +27,7 @@ typedef unsigned short ushort;
 
 #define NULL ((void*)0)
 
+#define KMEM_END 0x8000000
+#define PMEM 0x8000000
+
 #endif

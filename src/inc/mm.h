@@ -38,6 +38,27 @@ struct bk_dir {
     struct bucket_desc *chain;
 };
 
+struct pde {
+    uint off:20;
+    uint flag:9;
+    uint avl:3;
+};
+
+struct pte {
+    uint off:20;
+    uint flag:9;
+    uint avl:3;
+};
+
+struct page {
+    uchar flag;
+    uchar count;
+    ushort num;
+    struct page *next;
+};
+
+extern struct pde pgd0[];
+
 extern struct bucket_desc free_bk_desc_chain;
 extern struct bk_dir bucket_dir[];
 
