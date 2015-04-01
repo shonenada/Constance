@@ -71,7 +71,13 @@ struct page *pfind(uint pn) {
     return &freepage[pn];
 }
 
-void pmap(struct pde *pde, void* vaddr) {
+struct pte* pmap(struct pde *pgd, void* vaddr, struct page *page, uchar flag) {
+    struct pte *pte;
+    pte = pte_find(pgd, vaddr);
+    pte->ppn = page->idx;
+    pte->flag = flag;
+    lpgd(pgd);
+    return pte;
 }
 
 // setup paging

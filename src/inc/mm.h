@@ -26,17 +26,21 @@ extern uint *pdir;
 extern uint *ptab;
 
 // bucket allocation
+struct bucket_entry {
+    struct bucket_entry *next;
+};
+
 struct bucket_desc {
     void *page;
-    void *free_ptr;
     ushort cnt;
-    ushort bk_size;
+    ushort size;
     struct bucket_desc *next;
+    struct bucket_entry *first;
 };
 
 struct bk_dir {
     int size;
-    struct bucket_desc *chain;
+    struct bucket_desc *next;
 };
 
 struct pde {
@@ -52,7 +56,7 @@ struct pte {
 };
 
 extern struct pde pgd0[];
-extern struct bucket_desc free_bk_desc_chain;
+extern struct bucket_desc free_bk;
 extern struct bk_dir bucket_dir[];
 
 // set cr3 to be the base address of page directory
@@ -60,8 +64,6 @@ extern void flush_cr3();
 // set cr0(PG) to the 1, enable paging
 extern void page_enable();
 
-int bkslot(uint size);
-void* kmalloc();
 int do_page_fault(struct regs *rgs);
 int do_no_page(struct regs *rgs);
 int do_wp_page(struct regs *rgs);
@@ -71,5 +73,13 @@ void pgd_init(struct pde *pgd);
 int pgd_copy(struct pde *to, struct pde *from);
 int pgd_free(struct pde *pgd);
 void flush_pgd();
+
+int bkslot(int size);
+int bkinit(struct bucket_desc * bucket);
+struct bucket_desc* bkalloc();
+int bkfree(struct bucket_desc* bucket);
+void* kmalloc(int size);
+inline void* _kalloc(struct bucket_desc* bucket, int size);
+int kmfree();
 
 #endif

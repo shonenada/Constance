@@ -20,22 +20,3 @@ int do_wp_page(struct regs *rgs) {
     return 0;
 }
 
-void* kmalloc(uint size) {
-    int sn;
-    uint page;
-    struct bucket_desc *bk, *bh;
-
-    sn = bkslot(size);
-    if (sn < 0) {
-        panic("kmalloc(): wrong size");
-    }
-    bk = bh = &bucket_dir[sn];
-    size = bh->bk_size;
-    if (size == PAGE_SIZE) {
-        page = palloc();
-        return (void*)page;
-    }
-
-    while((bk=bk->next) != NULL) {
-    }
-}

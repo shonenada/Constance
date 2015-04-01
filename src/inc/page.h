@@ -16,7 +16,7 @@ extern struct page pagemap[NPAGE];
 struct page *palloc();
 void pfree(struct page*);
 struct page *pfind(uint pn);
-void pmap(struct pde *pde, void* vaddr);
+struct pte* pmap(struct pde *pgd, void* vaddr, struct page *page, uchar flag);
 void pm_init();
 void mm_init();
 void page_init();
