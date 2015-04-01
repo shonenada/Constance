@@ -86,7 +86,7 @@ struct buf* buf_read(uint dev, uint sector) {
     struct buf *bp;
     bp = buf_get(dev, sector);
     if (!(bp->flag & B_VALID)) {
-        // TODO: sync from disk
+        hd_sync(bp);
     }
     return bp;
 }
@@ -97,5 +97,5 @@ int buf_write(struct buf *bp) {
         return -1;
     }
     bp->flag |= B_DIRTY;
-    // TODO: sync to disk
+    hd_sync(bp);
 }
