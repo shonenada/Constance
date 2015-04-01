@@ -5,9 +5,9 @@
 #include <mm.h>
 #include <page.h>
 
+extern char __kend__;
 struct page pgfreelist;
 struct page freepage[NPAGE];
-extern char __kend__;
 
 struct pde pgd0[NPGD] __attribute__((aligned(4096)));
 struct pte pgt0[1024] __attribute__((aligned(4096)));
@@ -94,7 +94,6 @@ void page_init() {
     pgd_init(pgd0);
     pgd0[0].ppn = (uint)pgt0 >> 12;
     pgd0[0].flag = (PTE_P | PTE_RW);
-
 
     pm_init();
     irq_install(0x0E, do_page_fault);
