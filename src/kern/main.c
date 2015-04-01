@@ -45,6 +45,7 @@ void kmain() {
     keyboard_init();    puts("keyboard init..........done\n");
     sched_init();    puts("sched init..........done\n");
     hd_init();    puts("hd init..........done\n");
+    buf_init();    puts("buf init..........done\n");
     tty_init();    puts("tty init..........done\n");
     puts("Hello Constance!\n");
     sti();
