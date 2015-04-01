@@ -2,83 +2,100 @@
 #include <system.h>
 #include <segment.h>
 #include <sched.h>
+#include <fs.h>
 #include <buf.h>
 #include <blk.h>
 
-struct {
-    struct buf buf[NBUF];
-    struct buf head;
-} buffer;
+struct buf buffer[NBUF];
+struct buf bfreelist;
 
-// doubly-linked list
-void buffer_init() {
+/**
+ * Initialize for Buffer Block.
+ *
+ * Initialize linked list of free list of buffer.
+ */
+void buf_init() {
     int i;
-    buffer.head.prev = &buffer.head;
-    buffer.head.next = &buffer.head;
+    bfreelist.next = &bfreelist;
+    bfreelist.prev = &bfreelist;
     for (i=0;i<NBUF;i++) {
-        buffer.buf[i].next = buffer.head.next;
-        buffer.buf[i].prev = &buffer.head;
-        buffer.buf[i].dev = -1;
-        buffer.head.next->prev = &buffer.buf[i];
-        buffer.head.next = &buffer.buf[i];
+        buffer[i].next = bfreelist.next;
+        buffer[i].prev = &bfreelist;
+        buffer[i].dev = NODEV;
+        bfreelist.next->prev = &buffer[i];
+        bfreelist.next = &buffer[i];
     }
 }
 
-struct buf* get_buffer(uint dev, uint sector) {
-    struct buf* p;
-    _loop:
-    for (p=buffer.head.next;p!=&buffer.head;p=p->next) {
-        if (p->dev == dev && p->sector == sector) {
-            if (!(p->flag & B_BUSY)) {
+struct buf* buf_get(uint dev, uint sector) {
+    uint i;
+    struct buf* bp;
+
+_loop:
+    // Search 
+    bp = bfreelist.next;
+    while (bp != &bfreelist) {
+        if (bp->dev == dev && dev->sector == sector) {
+            // found, check flags
+            if (! (p->flag & B_BUSY)) {
                 p->flag |= B_BUSY;
-                return p;
+                return bp;
+            } else {
+                sleep((uint) bp);
+                goto _loop;
             }
-            sleep((uint) p);
-            goto _loop;
         }
+        bp = bp->next;
     }
 
-    // cache not found
-    for (p=buffer.head.prev;p!=&buffer.head;p=p->prev) {
-        if (!(p->flag & B_BUSY) == 0 && (p->flag & B_DIRTY) == 0) {
-            p->dev = dev;
-            p->sector = sector;
-            p->flag |= B_BUSY;
-            return p;
+    // not found
+    bp = bfreelist.prev;
+    while (bp != &bfreelist) {
+        if (!(bp->flag & B_BUSY) && !(bp->flag & B_DIRTY)) {
+            bp->dev = dev;
+            bp->sector = sector;
+            bp->flag |= B_BUSY;
+            return bp;
         }
+        bp = bp->prev;
     }
-    panic("get_buffer: no buffers");
+    panic("buf_get(): no buffers");
     return NULL;
 }
 
-void del_buffer(struct buf *b) {
-    if ((b->flag & B_BUSY) == 0) {
-        panic("del_buffer: buffer deleted");
+int buf_relse(struct buf* bp) {
+    if (!(b->flag & B_BUSY)) {
+        panic("buf_relse(): buffer released");
+        return -1;
     }
-    b->next->prev = b->prev;
-    b->prev->next = b->next;
-    b->next = buffer.head.next;
-    b->prev = &buffer.head;
-    buffer.head.next->prev = b;
-    buffer.head.next = b;
-    b->flag &= ~B_BUSY;
 
-    wakeup((uint) b);
+    bp->next->prev = bp->prev;
+    bp->prev->next = bp->next;
+    bp->next = &bfreelist.next;
+    bp->prev = &bfreelist;
+    bfreelist.next->prev = bp;
+    bfreelist.next = bp;
+
+    bp->flag &= ~B_BUSY;
+
+    wakeup((uint) bp);
+    return 0;
 }
 
-struct buf* read_buffer(uint dev, uint sector) {
-    struct buf* b;
-    b = get_buffer(dev, sector);
-    if (!(b->flag & B_VALID)) {
-        hd_sync(b);
+struct buf* buf_read(uint dev, uint sector) {
+    struct buf *bp;
+    bp = buf_get(dev, sector);
+    if (!(bp->flag & B_VALID)) {
+        // TODO: sync from disk
     }
-    return b;
+    return bp;
 }
 
-void write_buffer(struct buf* b) {
-    if ((b->flag & B_BUSY) == 0)
-        panic("read_buffer: buffer busy");
-    b->flag |= B_DIRTY;
-    hd_sync(b);
+int buf_write(struct buf *bp) {
+    if (!(bp->flag & B_BUSY)) {
+        panic("buf_write(): buffer block is not busy");
+        return -1;
+    }
+    bp->flag |= B_DIRTY;
+    // TODO: sync to disk
 }
-

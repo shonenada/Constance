@@ -18,10 +18,13 @@ struct buf {
 #define B_DIRTY 0b001
 #define B_ERROR 0b0001
 
-void buffer_init();
-struct buf* get_buffer(uint dev, uint sector);
-void del_buffer(struct buf *b);
-struct buf* read_buffer(uint dev, uint sector);
+extern struct buf buffer[NBUF];
+extern struct buf bfreelist;
+
+void buf_init();
+struct buf* buf_get(uint dev, uint sector);
+int buf_relse(struct buf* bp);
+struct buf* buf_read(uint dev, uint sector);
 void write_buffer(struct buf* b);
 
 #endif
