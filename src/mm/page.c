@@ -9,9 +9,15 @@ struct page pgfreelist;
 struct page freepage[NPAGE];
 extern char __kend__;
 
+struct pde pgd0[NPGD] __attribute__((aligned(4096)));
+struct pte pgt0[1024] __attribute__((aligned(4096)));
+
 void pm_init() {
     uint idx;
     struct page *pg, *pf;
+
+    freepage[0].idx = 0;
+    freepage[0].flag = PG_RSVD;
 
     for (idx=640*1024/PAGE_SIZE; idx<PPN(&__kend__)+1;idx++) {
         freepage[idx].idx = idx;
@@ -20,12 +26,13 @@ void pm_init() {
 
     pf = &pgfreelist;
     for (idx=0;idx<NPAGE;idx++) {
-        if (freepage[idx].flag & PG_RSVD) {
+        if (freepage[idx].flag & PG_RSVD || freepage[idx].count > 0) {
             continue;
         }
         pg = &freepage[idx];
         pg->idx = idx;
         pg->count = 0;
+        pg->flag = 0;
         pg->next = NULL;
         pf->next = pg;
         pf = pg;
@@ -83,7 +90,12 @@ struct pte* pmap(struct pde *pgd, void* vaddr, struct page *page, uchar flag) {
 
 // setup paging
 void page_init() {
+    ptab_init(pgt0, PTE_P | PTE_RW);
     pgd_init(pgd0);
+    pgd0[0].ppn = (uint)pgt0 >> 12;
+    pgd0[0].flag = (PTE_P | PTE_RW);
+
+
     pm_init();
     irq_install(0x0E, do_page_fault);
     lpgd(pgd0);

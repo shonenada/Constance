@@ -19,6 +19,13 @@ gdt_flush:
 _ret_c:
   ret    ;; return to C
 
+[extern pgd0]
+[global flush_cr3]
+flush_cr3:
+  mov eax, [pgd0]
+  mov cr3, eax
+  ret
+
 [global page_enable]
 page_enable:
  push eax

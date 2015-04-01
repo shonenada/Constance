@@ -5,8 +5,6 @@
 #include <page.h>
 #include <sched.h>
 
-struct pde pgd0[NPGD];
-
 struct pte* pte_find(struct pde* pgd, uint vaddr) {
     uint pdx;
     struct pde *pde;
@@ -29,15 +27,19 @@ struct pte* pte_find(struct pde* pgd, uint vaddr) {
     return &pt[PT_INDEX(vaddr)];
 }
 
+void ptab_init(struct pte *pt, uint flag) {
+    int i;
+    for (i=0;i<1024;i++) {
+        pt[i].ppn = (i * PAGE_SIZE) >> 12;
+        pt[i].flag = flag;
+    }
+}
+
 void pgd_init(struct pde *pd) {
     uint pn;
-    for (pn=0;pn<1;pn++) {
-        pd[pn].ppn = pn * PAGE_SIZE;
-        pd->flag = PTE_P | PTE_RW;
-    }
-    for (pn=1;pn<NPGD;pn++) {
+    for (pn=0;pn<NPGD;pn++) {
         pd[pn].ppn = 0;
-        pd->flag = PTE_U;
+        pd[pn].flag = PTE_U | PTE_RW;
     }
 }
 

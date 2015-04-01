@@ -1,5 +1,6 @@
 #ifndef __MM_H
 #define __MM_H
+
 #include <const.h>
 
 #define PTE_P           0b1    // present
@@ -44,15 +45,15 @@ struct bk_dir {
 };
 
 struct pde {
-    uint ppn:20;
     uint flag:9;
     uint avl:3;
+    uint ppn:20;
 };
 
 struct pte {
-    uint ppn:20;
     uint flag:9;
     uint avl:3;
+    uint ppn:20;
 };
 
 extern struct pde pgd0[];
@@ -69,6 +70,7 @@ int do_no_page(struct regs *rgs);
 int do_wp_page(struct regs *rgs);
 
 struct pte* pte_find(struct pde* pgd, uint vaddr);
+void ptab_init(struct pte *pt, uint flag);
 void pgd_init(struct pde *pgd);
 int pgd_copy(struct pde *to, struct pde *from);
 int pgd_free(struct pde *pgd);

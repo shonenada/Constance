@@ -36,16 +36,16 @@ void init() {
 }
 
 void kmain() {
-    gdt_init();    puts("gdt init..........done");
-    idt_init();    puts("idt init..........done");
-    video_init();    puts("video init..........done");
-    timer_init();    puts("timer init..........done");
-    time_init();    puts("time init..........done");
-    page_init();     puts("page init..........done");
-    keyboard_init();    puts("keyboard init..........done");
-    sched_init();    puts("sched init..........done");
-    hd_init();    puts("hd init..........done");
-    tty_init();    puts("tty init..........done");
+    gdt_init();    puts("gdt init..........done\n");
+    idt_init();    puts("idt init..........done\n");
+    video_init();    puts("video init..........done\n");
+    timer_init();    puts("timer init..........done\n");
+    time_init();    puts("time init..........done\n");
+    page_init();     puts("page init..........done\n");
+    keyboard_init();    puts("keyboard init..........done\n");
+    sched_init();    puts("sched init..........done\n");
+    hd_init();    puts("hd init..........done\n");
+    tty_init();    puts("tty init..........done\n");
     puts("Hello Constance!\n");
     sti();
     for(;;);
