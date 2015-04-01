@@ -20,7 +20,7 @@ uint find_entry(struct inode* dip, char *name, uint len) {
 
     for(i=0;i<dip->size/BLK_SIZE+1;i++) {
         bn = bmap(dip, i);
-        bp = read_buffer((uint) dip->idev, bn);
+        bp = buf_read((uint) dip->idev, bn);
         dep = (struct dire*) bp->data;
         for (j=0;i<BLK_SIZE/(sizeof(struct dire))+1;j++) {
             if (len == strlen(dep[j].name) && strncmp(name, dep[j].name, len) == 0) {
@@ -45,7 +45,7 @@ int unlink_entry(struct inode *dip, char *name, int len) {
 
     for(i=0;i<dip->size/BLK_SIZE+1;i++) {
         bn = bmap(dip, i);
-        bp = read_buffer(dip->idev, bn);
+        bp = buf_read(dip->idev, bn);
         dep = (struct dire*) bp->data;
         for(j=0;j<BLK_SIZE/(sizeof(struct dire))+1;j++) {
             if (len == strlen(dep[j].name) && strncmp(name, dep[j].name, len) == 0) {

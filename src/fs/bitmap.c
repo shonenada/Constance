@@ -19,7 +19,7 @@ uint bmap(struct inode *ip, uint bn) {
         if (ip->zone[7] == 0) {
             ip->zone[7] = balloc(ip->idev);
         }
-        bp = read_buffer(ip->idev, ip->zone[7]);
+        bp = buf_read(ip->idev, ip->zone[7]);
         tmp = (uint*) (bp->data);
         if (tmp[bn] == 0) {
             tmp[bn] = balloc(ip->idev);

@@ -152,9 +152,9 @@ int readi(struct inode *ip, char *buf, uint off, uint cnt) {
         if (bn == 0) {
             memset(bp->data + off % BLK_SIZE, 0, m);
         } else {
-            bp = read_buffer(ip->idev, bn);
+            bp = buf_read(ip->idev, bn);
             memcpy(buf, bp->data + off % BLK_SIZE, m);
-            del_buffer(bp);
+            buf_relse(bp);
         }
     }
     return cnt;
@@ -175,7 +175,7 @@ int writei(struct inode* ip, char *buf, uint off, uint cnt) {
         if (bn == 0) {
             panic("writei: bad block");
         } else {
-            bp = read_buffer(ip->idev, bn);
+            bp = buf_read(ip->idev, bn);
             memcpy(bp->data + off % BLK_SIZE, buf, m);
             hd_sync(bp);
         }

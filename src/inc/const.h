@@ -31,5 +31,4 @@ typedef unsigned short ushort;
 
 #define NULL ((void*)0)
 
-
 #endif

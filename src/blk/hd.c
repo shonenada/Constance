@@ -5,7 +5,7 @@
 #include <buf.h>
 #include <blk.h>
 
-struct buf * hdqueue;
+struct dev hd_dev = {0, NULL, NULL, NULL, NULL};
 
 // wait for hard disk
 int hd_ready() {
@@ -29,11 +29,21 @@ int hd_out(int sector_num, int sector, int dev_no, int rw) {
     return 0;
 }
 
-int hd_start(struct buf *bp) {
-    if (bp->flag & B_DIRTY) {    // write
+int hd_start() {
+    if (hd_dev.io_next == NULL || hd_dev.io_next == (struct buf*)&hd_dev) {
+        // io list is empty
+        return 0;
+    }
+
+    struct buf *bp;
+    bp = hd_dev.io_prev;
+    hd_dev.active = 1;
+    if (bp->flag & B_DIRTY) {
+        // write to disk
         hd_out(1, bp->sector, bp->dev, HD_CMD_WRITE);
         outsl(0x1F0, bp->data, 512/4);
     } else {
+        // read from disk
         hd_out(1, bp->sector, bp->dev, HD_CMD_READ);
     }
     return 0;
@@ -42,50 +52,49 @@ int hd_start(struct buf *bp) {
 // sync buffer with disk
 // if B_DIRTY is set, write buffer to disk, reset B_DIRTY and set B_VALID
 // if B_VALID is not set, read from disk and load into buffer, set B_VALID
-int hd_sync(struct buf *b) {
-    struct buf **p;
+int hd_sync(struct buf *bp) {
+    if (!(bp->flag & B_BUSY))
+        panic("hd_sync(): Buffer is not busy");
+    if ((bp->flag & (B_VALID|B_DIRTY)) == B_VALID)
+        panic("hd_sync(): synced");
+    if (bp->dev < 0)
+        panic("hd_sync(): device not set");
 
-    if (!(b->flag & B_BUSY))
-        panic("hd_sync: Buffer is not busy");
-    if ((b->flag & (B_VALID|B_DIRTY)) == B_VALID)
-        panic("hd_sync: synced");
-    if (b->dev < 0)
-        panic("hd_sync: device not set");
+    bp->io_prev = (struct buf *)&hd_dev;
+    bp->io_next = hd_dev.io_next;
+    hd_dev.io_next->io_prev = bp;
+    hd_dev.io_next = bp;
 
-    b->qnext = 0;
-    for (p=&hdqueue;*p;p=&(*p)->next)
-        ;
-    *p = b;
+    if (hd_dev.active == 0)
+        hd_start();
 
-    if (hdqueue == b)
-        hd_start(b);
-
-    while((b->flag & (B_VALID|B_DIRTY)) != B_VALID)
-        sleep((uint) b);
     return 0;
 }
 
 int do_hd_intr(struct regs *rgs) {
-    struct buf *b;
-    if ((b = hdqueue) == 0) {
-        // no device
-        return -1;
-    }
-    hdqueue = b->qnext;
-    if (!(b->flag & B_DIRTY)) {
-        insl(0x1F0, b->data, 512/4);
+    struct buf *bp;
+    if (hd_dev.active == 0)
+        return 0;
+
+    hd_dev.active = 0;
+    bp = hd_dev.io_prev;
+    bp->io_prev->io_next = bp->io_next;
+    bp->io_next->io_prev = bp->io_prev;
+
+    if (!(bp->flag & B_DIRTY)) {
+        // read into memory from disk
+        insl(0x1F0, bp->data, 512/4);
     }
 
-    b->flag |= B_VALID;
-    b->flag &= ~B_BUSY;
-    wakeup((uint) b);
-
-    if (hdqueue != 0) {
-        hd_start(hdqueue);
-    }
+    bp->flag |= B_VALID;
+    bp->flag &= ~B_DIRTY;
+    wakeup((uint) bp);
+    hd_start();
     return 0;
 }
 
 void hd_init() {
+    hd_dev.buf_next = hd_dev.buf_prev = (struct buf *)&hd_dev;
+    hd_dev.io_next = hd_dev.io_prev = (struct buf *)&hd_dev;
     irq_install(0x2E, do_hd_intr);
 }

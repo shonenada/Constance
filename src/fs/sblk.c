@@ -48,7 +48,7 @@ int balloc (ushort dev) {
 
     sbp = getsblk(dev);
     for (i=0;i<sbp->nzones;i++) {
-        bp = read_buffer(dev,BBLOCK(sbp, i));
+        bp = buf_read(dev,BBLOCK(sbp, i));
         bl = find_free(bp->data, BLK_SIZE);
         if (bl < 0) {
             continue;
@@ -75,7 +75,7 @@ int bfree (ushort dev, uint nr) {
         panic("block not in data zones");
     }
     bn = nr + 1 - sbp->zone0;
-    bp = read_buffer(dev, BBLOCK(sbp, bn));
+    bp = buf_read(dev, BBLOCK(sbp, bn));
     if ((bp->data[bn/8] & (1 << (bn%8))) == 0) {
         panic("freeing free block");
     }
@@ -88,7 +88,7 @@ int bfree (ushort dev, uint nr) {
 // alloc zero block
 int bzero (ushort dev, uint bn) {
     struct buf *bp;
-    bp = get_buffer(dev, bn);
+    bp = buf_get(dev, bn);
     memset(bp->data, 0, BLK_SIZE);
     hd_sync(bp);
     return 0;
@@ -103,7 +103,7 @@ int ialloc (ushort dev) {
     sbp = getsblk(dev);
 
     for (i=0;i<sbp->ninodes;i++) {
-        bp = read_buffer(dev, IBLOCK(i));
+        bp = buf_read(dev, IBLOCK(i));
         r = find_free(bp->data, BLK_SIZE);
         if (r < 0) {
             continue;
@@ -127,7 +127,7 @@ int ifree (ushort dev, uint ino) {
     if ((ino <= 0) || (ino >= sbp->ninodes)) {
         panic("inode no exist");
     }
-    bp = read_buffer(dev, IBLOCK(ino));
+    bp = buf_read(dev, IBLOCK(ino));
     if ((bp->data[ino/8] & (1 << (ino%8))) == 0) {
         panic("inode is free");
     }
@@ -156,7 +156,7 @@ int find_free(uchar *bitmap, int size) {
 
 int sblk_load(struct sblk *sbp) {
     struct buf *bp;
-    bp = read_buffer(sbp->dev, 1);
+    bp = buf_read(sbp->dev, 1);
     if ((bp->flag & B_ERROR) != 0) {
         panic("sblk_load: disk read error");
         return -1;
@@ -164,7 +164,7 @@ int sblk_load(struct sblk *sbp) {
 
     memcpy(sbp, bp->data, sizeof(struct d_sblk));
 
-    del_buffer(bp);
+    buf_relse(bp);
     if (sbp->magic != S_MAGIC) {
         panic("sblk_load: inavailible device");
         return -1;
