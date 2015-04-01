@@ -7,6 +7,7 @@
 
 struct page pgfreelist;
 struct page freepage[NPAGE];
+extern char __kend__;
 
 void pm_init() {
     uint idx;
@@ -82,8 +83,9 @@ struct pte* pmap(struct pde *pgd, void* vaddr, struct page *page, uchar flag) {
 
 // setup paging
 void page_init() {
-
+    pgd_init(pgd0);
+    pm_init();
     irq_install(0x0E, do_page_fault);
-    flush_cr3();
+    lpgd(pgd0);
     page_enable();
 }

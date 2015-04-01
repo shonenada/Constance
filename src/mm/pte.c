@@ -3,13 +3,14 @@
 #include <asm.h>
 #include <mm.h>
 #include <page.h>
+#include <sched.h>
 
 struct pde pgd0[NPGD];
 
 struct pte* pte_find(struct pde* pgd, uint vaddr) {
-    uint pdx, ptx;
+    uint pdx;
     struct pde *pde;
-    struct pte *pte;
+    struct pte *pt;
     struct page *pg;
 
     pdx = PD_INDEX(vaddr);
@@ -19,24 +20,24 @@ struct pte* pte_find(struct pde* pgd, uint vaddr) {
         pg = palloc();
         pde->flag = PTE_P | PTE_U | PTE_RW;
         pde->ppn = pg->idx;
-        pte = (struct pte *)(pde->ppn * PAGE_SIZE);
+        pt = (struct pte *)(pde->ppn * PAGE_SIZE);
         memset(pt, 0, PAGE_SIZE);
         flush_pgd();
     }
 
-    pte = (struct pte*)(pde->ppn * PAGE_SIZE);
-    return &pte[PT_INDEX(vaddr)];
+    pt = (struct pte*)(pde->ppn * PAGE_SIZE);
+    return &pt[PT_INDEX(vaddr)];
 }
 
 void pgd_init(struct pde *pd) {
     uint pn;
     for (pn=0;pn<1;pn++) {
         pd[pn].ppn = pn * PAGE_SIZE;
-        pd.flag = PTE_P | PTE_RW;
+        pd->flag = PTE_P | PTE_RW;
     }
     for (pn=1;pn<NPGD;pn++) {
         pd[pn].ppn = 0;
-        pd.flag = PTE_U;
+        pd->flag = PTE_U;
     }
 }
 
@@ -79,7 +80,7 @@ int pgd_free(struct pde* pgd) {
     struct page *page;
 
     for(idx=0;idx<1024;idx++) {
-        pde = pgd[idx];
+        pde = &pgd[idx];
         if (pde->flag & PTE_P) {
             pt = (struct pte*)(pde->ppn * PAGE_SIZE);
             for (ptn=0;ptn<1024;ptn++) {
@@ -97,5 +98,5 @@ int pgd_free(struct pde* pgd) {
 }
 
 void flush_pgd() {
-    lpgd(current->tvm.pgd);
+    // lpgd(current->tvm.pgd);
 }

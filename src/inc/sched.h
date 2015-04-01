@@ -7,7 +7,6 @@
 #include <stat.h>
 #include <file.h>
 #include <sig.h>
-#include <vm.h>
 
 #define TSS0 0x5
 #define TSS_SEL(n) ((n<<4)+(TSS0<<3))    // offset of tss in GDT, size of descriptor = 8 bytes
@@ -71,7 +70,6 @@ struct ktask {
     struct inode *wdir;
     struct inode *iroot;
     struct context_buf context;
-    struct vm tvm;
 };
 
 extern struct tss_entry tss;

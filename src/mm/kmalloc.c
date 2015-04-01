@@ -63,7 +63,7 @@ struct bucket_desc* bkalloc() {
         page_addr = page->idx * PAGE_SIZE;
         page_end = page_addr + PAGE_SIZE;
         cli();
-        for (bucket=(struct bucket_desc*)page_addr;(uint)bucket < page_end; bk++) {
+        for (bucket=(struct bucket_desc*)page_addr;(uint)bucket < page_end; bucket++) {
             list->next = bucket;
             bucket->next = NULL;
             list = bucket;
@@ -71,7 +71,7 @@ struct bucket_desc* bkalloc() {
         sti();
     }
     bucket = free_bk.next;
-    free_bk.next = bucket.next;
+    free_bk.next = bucket->next;
     return bucket;
 }
 
@@ -97,7 +97,7 @@ void* kmalloc(int size) {
     }
 
     dir = bucket_dir[idx];
-    size = dir->size;
+    size = dir.size;
     bucket = dir.next;
 
     if (size == PAGE_SIZE) {
@@ -127,7 +127,7 @@ _loop:
     bk = bkalloc();
     bkinit(bk, size);
     bk->next = bucket->next;
-    bucket->bk_next = bk;
+    bucket->next = bk;
     goto _loop;
 }
 
@@ -135,7 +135,7 @@ int kmfree(void *addr, uint size) {
     int idx;
     uint page_addr;
     struct page *page;
-    struct bucket_dir dir;
+    struct bk_dir dir;
     struct bucket_desc *bucket;
     struct bucket_entry *be;
 
@@ -147,13 +147,13 @@ int kmfree(void *addr, uint size) {
     page_addr = PPN(addr) * PAGE_SIZE;
 
     if (size == PAGE_SIZE) {
-        page = pfind(PPN(addr));
+        page = pfind((uint)(PPN(addr)));
         pfree(page);
         return 0;
     }
 
     dir = bucket_dir[idx];
-    size = dir->size;
+    size = dir.size;
     bucket = dir.next;
     be = (struct bucket_entry*)addr;
 

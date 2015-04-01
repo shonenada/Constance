@@ -1,5 +1,5 @@
-#ifndef __PAGE_H
-#define __PAGE_H
+#ifndef __MM_H
+#define __MM_H
 #include <const.h>
 
 #define PTE_P           0b1    // present
@@ -68,14 +68,14 @@ int do_page_fault(struct regs *rgs);
 int do_no_page(struct regs *rgs);
 int do_wp_page(struct regs *rgs);
 
-struct pte* pte_find(struct pde* pgd, uint vaddr, uint creat);
+struct pte* pte_find(struct pde* pgd, uint vaddr);
 void pgd_init(struct pde *pgd);
 int pgd_copy(struct pde *to, struct pde *from);
 int pgd_free(struct pde *pgd);
 void flush_pgd();
 
 int bkslot(int size);
-int bkinit(struct bucket_desc * bucket);
+int bkinit(struct bucket_desc *bucket, int size);
 struct bucket_desc* bkalloc();
 int bkfree(struct bucket_desc* bucket);
 void* kmalloc(int size);
