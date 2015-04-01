@@ -60,7 +60,7 @@ int iload(struct inode *ip) {
     if (sp == NULL) {
         panic("cannot get super block");
     }
-    bp = read_buffer(ip->idev, IBLOCK(ip->inum));
+    bp = buf_read(ip->idev, IBLOCK(ip->inum));
     // error handle
     inp = (struct d_inode*) bp->data;
     memcpy(ip, &inp[(ip->inum-1)%IPB], sizeof(struct d_inode));
@@ -77,7 +77,7 @@ void iupdate(struct inode *ip) {
         panic("iupdate: error super block");
     }
 
-    bp = read_buffer(ip->idev, IBLOCK(ip->inum));
+    bp = buf_read(ip->idev, IBLOCK(ip->inum));
 
     inp = (struct d_inode*) bp->data;
     memcpy(&inp[(ip->inum-1)%IPB], ip->zone, sizeof(struct d_inode));
@@ -140,7 +140,7 @@ int itrunc(struct inode* ip) {
     }
 
     if (ip->zone[7]) {
-        bp = read_buffer(ip->idev, ip->zone[7]);
+        bp = buf_read(ip->idev, ip->zone[7]);
         tmp = (uint *) bp->data;
         for (i=0;i<NINDBLK;i++) {
             if (tmp[i]) {
