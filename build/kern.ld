@@ -18,6 +18,6 @@ SECTIONS {
         *(.bss);
         . = ALIGN(4096);
     }
-    end = .;
+    __kend__ = .;
 }
 
