@@ -26,6 +26,6 @@ void buf_init();
 struct buf* buf_get(uint dev, uint sector);
 int buf_relse(struct buf* bp);
 struct buf* buf_read(uint dev, uint sector);
-void buf_write(struct buf* b);
+int buf_write(struct buf* b);
 
 #endif

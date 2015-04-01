@@ -53,11 +53,11 @@ int hd_start() {
 // if B_DIRTY is set, write buffer to disk, reset B_DIRTY and set B_VALID
 // if B_VALID is not set, read from disk and load into buffer, set B_VALID
 int hd_sync(struct buf *bp) {
-    if (!(b->flag & B_BUSY))
+    if (!(bp->flag & B_BUSY))
         panic("hd_sync(): Buffer is not busy");
-    if ((b->flag & (B_VALID|B_DIRTY)) == B_VALID)
+    if ((bp->flag & (B_VALID|B_DIRTY)) == B_VALID)
         panic("hd_sync(): synced");
-    if (b->dev < 0)
+    if (bp->dev < 0)
         panic("hd_sync(): device not set");
 
     bp->io_prev = (struct buf *)&hd_dev;
@@ -94,7 +94,7 @@ int do_hd_intr(struct regs *rgs) {
 }
 
 void hd_init() {
-    hd_dev.buf_next = hd_dev.buf_prev = (struct buf *) hd_dev;
-    hd_dev.io_next = hd_dev.io_prev = (struct buf *) hd_dev;
+    hd_dev.buf_next = hd_dev.buf_prev = (struct buf *)&hd_dev;
+    hd_dev.io_next = hd_dev.io_prev = (struct buf *)&hd_dev;
     irq_install(0x2E, do_hd_intr);
 }

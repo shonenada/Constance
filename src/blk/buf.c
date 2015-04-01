@@ -28,17 +28,16 @@ void buf_init() {
 }
 
 struct buf* buf_get(uint dev, uint sector) {
-    uint i;
     struct buf* bp;
 
 _loop:
     // Search 
     bp = bfreelist.next;
     while (bp != &bfreelist) {
-        if (bp->dev == dev && dev->sector == sector) {
+        if (bp->dev == dev && bp->sector == sector) {
             // found, check flags
-            if (! (p->flag & B_BUSY)) {
-                p->flag |= B_BUSY;
+            if (!(bp->flag & B_BUSY)) {
+                bp->flag |= B_BUSY;
                 return bp;
             } else {
                 sleep((uint) bp);
@@ -64,7 +63,7 @@ _loop:
 }
 
 int buf_relse(struct buf* bp) {
-    if (!(b->flag & B_BUSY)) {
+    if (!(bp->flag & B_BUSY)) {
         panic("buf_relse(): buffer released");
         return -1;
     }
