@@ -1,50 +1,89 @@
 #include <system.h>
 #include <const.h>
 #include <asm.h>
-#include <console.h>
 #include <segment.h>
 #include <mm.h>
+#include <page.h>
 
-uint *pdir = (uint *) 0x10000;
-uint *ptab = (uint *) 0x1D000;
+struct page pgfreelist;
+struct page freepage[NPAGE];
 
-uchar page_map[NPAGE] = {0,};
+void pm_init() {
+    uint idx;
+    struct page *pg, *pf;
 
-// alloc a page
-uint palloc() {
-    int i;
-    for (i=0;i<NPAGE;i++) {
-        if (page_map[i] == 0) {
-            page_map[i]++;
-            return (LO_MEM + (i * PAGE_SIZE));
+    for (idx=640*1024/PAGE_SIZE; idx<PPN(&__kend__)+1;idx++) {
+        freepage[idx].idx = idx;
+        freepage[idx].flag = PG_RSVD;
+    }
+
+    pf = &pgfreelist;
+    for (idx=0;idx<NPAGE;idx++) {
+        if (freepage[idx].flag & PG_RSVD) {
+            continue;
         }
+        pg = &freepage[idx];
+        pg->idx = idx;
+        pg->count = 0;
+        pg->next = NULL;
+        pf->next = pg;
+        pf = pg;
     }
-    panic("palloc(): no enough page");
-    return -1;
 }
 
-uint pfree(uint addr) {
-    int i;
-    i = (addr - LO_MEM) / PAGE_SIZE;
-    if (page_map[i] > 0) {
-        page_map[i]--;
-        return i;
+struct page *palloc() {
+    struct page *page;
+    if (pgfreelist.next == NULL) {
+        panic("palloc(): no free page. \n");
+        return NULL;
     }
-    return -1;
+
+    cli();
+    page = pgfreelist.next;
+    page->count++;
+    pgfreelist.next = page->next; 
+    sti();
+    return page;
 }
 
-// addr: linear address
-// phyaddr: physical address
-int map_page(uint addr, uint phyaddr, uint flag) {
-    uint pde = pdir[PD_INDEX(addr)];
-    if (!(pde & PTE_P)) {     //
-        pde = palloc();
-        if (pde < 0)
-            panic("map_page(): no enough page");
-        pdir[PD_INDEX(addr)] = pde | PTE_P | PTE_RW | PTE_U;
+int pfree(struct page* page) {
+    if (page->count <= 0) {
+        panic("pfree(): page is free"); 
+        return -1;
     }
-    uint *ptab = (uint *) PTE_ADDR(pde);
-    ptab[PT_INDEX(addr)] = phyaddr | flag;
-    page_map[phyaddr/0x1000]++;
-    return 0;
+
+    cli();
+    page->count--;
+    if (page->count <= 0) {
+        page->count = 0;
+        page->next = pgfreelist.next;
+        pgfreelist.next = page;
+    }
+    sti();
+    return page->idx;
+}
+
+struct page *pfind(uint pn) {
+    if (pn < 0 || pn >= NPAGE) {
+        panic("pfind(): bad parameter");
+        return NULL;
+    }
+    return &freepage[pn];
+}
+
+struct pte* pmap(struct pde *pgd, void* vaddr, struct page *page, uchar flag) {
+    struct pte *pte;
+    pte = pte_find(pgd, vaddr);
+    pte->ppn = page->idx;
+    pte->flag = flag;
+    lpgd(pgd);
+    return pte;
+}
+
+// setup paging
+void page_init() {
+
+    irq_install(0x0E, do_page_fault);
+    flush_cr3();
+    page_enable();
 }

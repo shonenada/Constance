@@ -1,4 +1,5 @@
 #include <const.h>
+#include <mm.h>
 #include <asm.h>
 
 inline void cli() {
@@ -29,4 +30,8 @@ inline void outsl(int port, const void* addr, int cnt) {
                   "=S" (addr), "=c" (cnt) :
                   "d" (port), "0" (addr), "1" (cnt) :
                   "cc");
+}
+
+inline void lpgd(struct pde *pgdir) {
+    asm volatile ("mov %%eax, %%cr3"::"a"((uint)pgdir));
 }
