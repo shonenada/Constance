@@ -73,7 +73,8 @@ int pfree(struct page* page) {
 
 struct page *pfind(uint pn) {
     if (pn < 0 || pn >= NPAGE) {
-        panic("pfind(): bad parameter");
+        printk("pfind(): pn = %d", pn);
+        panic("pfind(): bad parameter.");
         return NULL;
     }
     return &freepage[pn];
@@ -92,7 +93,7 @@ struct pte* pmap(struct pde *pgd, void* vaddr, struct page *page, uchar flag) {
 void page_init() {
     ptab_init(pgt0, PTE_P | PTE_RW);
     pgd_init(pgd0);
-    pgd0[0].ppn = (uint)pgt0 >> 12;
+    pgd0[0].ppn = PPN((uint)pgt0);
     pgd0[0].flag = (PTE_P | PTE_RW);
 
     pm_init();

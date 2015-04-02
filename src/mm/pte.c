@@ -28,7 +28,7 @@ struct pte* pte_find(struct pde* pgd, uint vaddr) {
 }
 
 void ptab_init(struct pte *pt, uint flag) {
-    int i;
+    uint i;
     for (i=0;i<1024;i++) {
         pt[i].ppn = (i * PAGE_SIZE) >> 12;
         pt[i].flag = flag;
@@ -53,7 +53,7 @@ int pgd_copy(struct pde *to_pd, struct pde *from_pd) {
         from_pde = &from_pd[idx];
         to_pde = &to_pd[idx];
         to_pde->flag = from_pde->flag;
-        if (from_pde->flag * PTE_P) {
+        if (from_pde->flag & PTE_P) {
             from_pt = (struct pte*)(from_pde->ppn * PAGE_SIZE);
             pg = palloc();
             to_pt = (struct pte*)(pg->idx * PAGE_SIZE);    // linear address
@@ -100,5 +100,5 @@ int pgd_free(struct pde* pgd) {
 }
 
 void flush_pgd() {
-    // lpgd(current->tvm.pgd);
+    lpgd(current->pdir);
 }
