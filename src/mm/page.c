@@ -97,7 +97,7 @@ void page_init() {
     pgd0[0].flag = (PTE_P | PTE_RW);
 
     pm_init();
-    irq_install(0x0E, do_page_fault);
+    set_task_gate(0x0E, do_page_fault);
     lpgd(pgd0);
     page_enable();
 }

@@ -66,8 +66,8 @@ extern void flush_cr3();
 extern void page_enable();
 
 int do_page_fault(struct regs *rgs);
-int do_no_page(struct regs *rgs);
-int do_wp_page(struct regs *rgs);
+int do_no_page(uint addr);
+int do_wp_page(uint addr);
 
 struct pte* pte_find(struct pde* pgd, uint vaddr);
 void ptab_init(struct pte *pt, uint flag);
