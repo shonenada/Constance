@@ -35,6 +35,22 @@ page_enable:
  pop eax
  ret
 
+[global do_swtch]
+do_swtch:
+  mov eax, dword [esp + 4]
+  mov edx, dword [esp + 8]
+  push ebp
+  push ebx
+  push esi
+  push edi
+  mov [eax], esp
+  mov esp, edx
+  pop edi
+  pop esi
+  pop ebx
+  pop ebp
+  ret
+
 [section .text]
 [global _int_common_ret]
 ;; hardware interrupt common stub,
