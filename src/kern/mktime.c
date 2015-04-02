@@ -1,7 +1,7 @@
 #include <system.h>
 #include <time.h>
 
-static long startup_ts;
+static volatile long startup_ts = 0;
 
 // Read time information from CMOS
 #define CMOS_READ(addr) ({outportb(0x70,0x80|addr);inportb(0x71);})
@@ -56,17 +56,17 @@ void cmos_time(struct time* tm) {
 }
 
 long kern_ts(struct time* tm) {
-    long ts; 
     int y;
+    long ts; 
     y = tm->tm_year - 1970;
     ts = y * YEAR + ((y+1)/4) * DAY;    // leap-year
     ts += mdays[tm->tm_month];
     if (tm->tm_month > 1 && ((y+2)%4))
-        tm -= DAY;
-    tm += DAY * (tm->tm_day - 1);
-    tm += HOUR * (tm->tm_hour);
-    tm += MINUTE * (tm->tm_minute);
-    tm += tm->tm_second;
+        ts -= DAY;
+    ts += DAY * (tm->tm_day - 1);
+    ts += HOUR * (tm->tm_hour);
+    ts += MINUTE * (tm->tm_minute);
+    ts += tm->tm_second;
     return ts;
 }
 
@@ -78,6 +78,12 @@ void time_init() {
     startup_ts = kern_ts(&tm);
 }
 
-long timestamp() {
+long start_time() {
     return startup_ts;
+}
+
+long timestamp() {
+    struct time tm;
+    cmos_time(&tm);
+    return kern_ts(&tm);
 }

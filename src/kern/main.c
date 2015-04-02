@@ -44,10 +44,11 @@ void kmain() {
     buf_init();    puts("buf init..........done\n");
     tty_init();    puts("tty init..........done\n");
     timer_init();    puts("timer init..........done\n");
-    dump_procs();
-    //time_init();    puts("time init..........done\n");
+    time_init();    puts("time init..........done\n");
     task0_init();    puts("task0 init.........done\n");
-    puts("Hello Constance!\n");
     sti();
+
+    printk("\n\nHello Constance!\nstart at: %d", start_time()); 
+
     for(;;);
 }
