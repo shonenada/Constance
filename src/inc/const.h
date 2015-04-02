@@ -7,6 +7,8 @@ typedef unsigned int uint;
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 
+#define DEBUG 1
+
 /* Common variable */
 #define KERN_CS 0x08    // kernel code segment
 #define KERN_DS 0x10

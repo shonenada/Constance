@@ -64,7 +64,7 @@ struct ktask {
     ushort gid, egid, sgid;
     uint error;
     char *kstack;
-    struct pde * pdir;
+    struct pde* pdir;
     struct sigact sigacts[NSIG];
     struct regs *rgs;
     struct file *files[NOFILE];

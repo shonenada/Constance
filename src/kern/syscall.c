@@ -44,8 +44,10 @@ int sys_nosys(struct regs* rgs) {
 }
 
 int sys_fork(struct regs* rgs) {
-    puts("sys_fork");
-    return 0;
+    if (DEBUG) {
+        puts("debug: ---- do_fork(); -----");
+    }
+    return do_fork(rgs);
 }
 
 int sys_read(struct regs* rgs) {
