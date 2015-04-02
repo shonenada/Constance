@@ -4,30 +4,6 @@
 #include <sched.h>
 #include <console.h>
 
-uchar mem0[1024] = {0,};
-struct tss_entry tss;
-struct ktask *current = NULL;
-struct ktask *tasks[NTASKS] = {NULL,};
-
-void sched_init() {
-    struct ktask *t = current = tasks[0] = (struct ktask*) (uint) mem0;
-    t->pid = 0;
-    t->ppid = 0;
-    t->state = TASK_RUNNING;
-    t->ldt_sel = LDT_SEL(t->pid);
-
-    tss.ss0 = KERN_DS;
-    tss.esp0 = (uint)t + 0x1000;
-
-    seg_set(&(t->ldts[1]), 0, 640 * 1024, RING3, SEG_CODE_EXRD);
-    seg_set(&(t->ldts[2]), 0, 640 * 1024, RING3, SEG_DATA_RW);
-
-    tss_set(&gdt[TSS0], (uint) &tss);
-    ldt_set(&gdt[LDT0], (uint) &(t->ldts));
-    ltr(TSS_SEL(t->pid));
-    lldt(LDT_SEL(t->pid));
-}
-
 void sleep(uint channel) {
     cli();
     if (current == tasks[0]) {    // tasks[0] is init process
@@ -87,20 +63,16 @@ void schedule() {
 
 // refer to linux/sched.h (swtich_to)
 void switch_to(struct ktask* target) {
+    struct ktask* old;
+
     if (current == target)
         return;
     tss.esp0 = (uint)target + 0x1000;
-    lldt(LDT_SEL(target->pid));    // modify esp according to LDT of task
+    old = current;
     current = target;
+    lpgd(target->pdir);
     // restore stack
-    asm volatile (
-        "mov %%eax, %%esp;"\
-        "pop %%gs;"\
-        "pop %%fs;"\
-        "pop %%es;"\
-        "pop %%ds;"\
-        "popa;"\
-        "add %%esp, 8;"::"a"(&target->rgs));
+    do_swtch(&(old->context), &(target->context));
 }
 
 int find_empty() {
@@ -111,4 +83,15 @@ int find_empty() {
         }
     }
     return -1;
+}
+
+void dump_procs() {
+    int i;
+    struct ktask *task;
+    for (i=0;i<NTASKS;i++) {
+        task = tasks[i];
+        if (task) {
+            printk("pid: %d\n", task->pid);
+        }
+    }
 }

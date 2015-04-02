@@ -15,9 +15,12 @@
 
 enum task_state {TASK_RUNNING, TASK_INTERRUPTIBLE, TASK_UNINTERRUPTIBLE, TASK_ZOMBLE, TASK_STOPPED};
 
-struct context_buf {
-    int eip, esp, ebx, ecx, edx, esi, edi, ebp;
-    uint __sigmask;
+struct context {
+    uint edi;
+    uint esi;
+    uint ebx;
+    uint ebp;
+    uint eip;
 };
 
 struct tss_entry {
@@ -43,6 +46,7 @@ struct tss_entry {
 } __attribute__ ((packed));
 
 // define data struct for task
+// TODO remove useless fileds
 struct ktask {
     int state;     // state of this task
     long counter;    // running time
@@ -54,22 +58,20 @@ struct ktask {
     long pid;
     long ppid;
     long pgrp;
-    long utime;
-    long stime;
     long start_time;
     uint channel;
     ushort uid, euid, suid;
     ushort gid, egid, sgid;
-    uint ldt_sel;
     uint error;
+    char *kstack;
+    struct pde * pdir;
     struct sigact sigacts[NSIG];
-    struct seg_desc ldts[NLDT];
     struct regs *rgs;
     struct file *files[NOFILE];
     uint fdflag[NOFILE];
     struct inode *wdir;
     struct inode *iroot;
-    struct context_buf context;
+    struct context context;
 };
 
 extern struct tss_entry tss;
@@ -77,7 +79,6 @@ extern struct ktask task0;
 extern struct ktask *current;
 extern struct ktask *tasks[NTASKS];
 
-void sched_init();
 void sleep(uint channel);
 void sleep_on(struct ktask*, uint channel);
 void wakeup(uint channel);
@@ -85,5 +86,8 @@ void wakeup_on(struct ktask*, uint channel);
 void schedule();
 int find_empty();
 void switch_to(struct ktask* target);    // switch from current to target task
+void do_swtch(struct context* old, struct context* new);
+
+void dump_procs();
 
 #endif

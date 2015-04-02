@@ -151,4 +151,5 @@ void dump_rgs(struct regs* rgs) {
     printk("gs: %d, fs: %d, es: %d, ds: %d\n", rgs->gs, rgs->fs, rgs->es, rgs->ds);
     printk("edi: %d, esi: %d, ebp: %d\n", rgs->edi, rgs->esi, rgs->ebp);
     printk("ebx: %d, edx: %d, ecx: %d, eax: %d\n", rgs->ebx, rgs->edx, rgs->ecx, rgs->eax);
+    printk("eip: %d", rgs->eip);
 }

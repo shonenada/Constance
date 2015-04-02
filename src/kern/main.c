@@ -11,7 +11,6 @@
 #include <inode.h>
 #include <file.h>
 
-
 void init() {
     struct inode *ip;
 
@@ -39,14 +38,15 @@ void kmain() {
     gdt_init();    puts("gdt init..........done\n");
     idt_init();    puts("idt init..........done\n");
     video_init();    puts("video init..........done\n");
-    timer_init();    puts("timer init..........done\n");
-    time_init();    puts("time init..........done\n");
     page_init();     puts("page init..........done\n");
     keyboard_init();    puts("keyboard init..........done\n");
-    sched_init();    puts("sched init..........done\n");
     hd_init();    puts("hd init..........done\n");
     buf_init();    puts("buf init..........done\n");
     tty_init();    puts("tty init..........done\n");
+    timer_init();    puts("timer init..........done\n");
+    dump_procs();
+    //time_init();    puts("time init..........done\n");
+    task0_init();    puts("task0 init.........done\n");
     puts("Hello Constance!\n");
     sti();
     for(;;);
