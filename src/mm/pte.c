@@ -64,8 +64,8 @@ int pgd_copy(struct pde *to_pd, struct pde *from_pd) {
                 to_pte->ppn = from_pte->ppn;
                 to_pte->flag = from_pte->flag;
                 if (from_pte->flag & PTE_P) {
-                    from_pte->flag &= ~PTE_P;
-                    to_pte->flag &= ~PTE_P;
+                    from_pte->flag &= ~PTE_RW;
+                    to_pte->flag &= ~PTE_RW;
                     fpg = pfind(from_pte->ppn);
                     fpg->count++;
                 }

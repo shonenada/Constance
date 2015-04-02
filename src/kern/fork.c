@@ -2,7 +2,7 @@
 #include <const.h>
 #include <sched.h>
 #include <mm.h>
-#include <mm.h>
+#include <page.h>
 
 struct ktask task0;
 struct tss_entry tss;
@@ -45,7 +45,9 @@ struct ktask* kspawn(void (*func)) {
         task->sigacts[i] = current->sigacts[i];
     }
 
-    //TODO: clone kernel's address space
+    task->pdir = (struct pde *)kmalloc(PAGE_SIZE);
+    pgd_init(task->pdir);
+    pgd_copy(task->pdir, current->pdir);
 
     task->context = current->context;
     task->context.eip = (uint)func;
