@@ -4,7 +4,7 @@
 static long startup_ts;
 
 // Read time information from CMOS
-#define CMOS_READ(addr) ({outportb(0x80|addr,0x70);inportb(0x71);})
+#define CMOS_READ(addr) ({outportb(0x70,0x80|addr);inportb(0x71);})
 
 #define RTC_YEAR 9
 #define RTC_MONTH 8
