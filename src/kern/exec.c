@@ -2,10 +2,39 @@
 #include <const.h>
 #include <errno.h>
 #include <unistd.h>
+#include <buf.h>
 #include <mm.h>
 #include <page.h>
+#include <a.out.h>
 
 int do_exec(char *path, char **args) {
+    uint bn;
+    char **tmp;
+    struct ahead *ah;
+    struct inode *ip;
+    struct buf* bp;
+
+    ip = namei(path, 0);
+    if (ip == NULL) {
+        return syserr(ENOENT);
+    }
+    // first block
+    bn = bmap(ip, 0, 0);
+    if (bn == 0) {
+        syserr(EINVAL);
+        goto _badf;
+    }
+
+    bp = buf_read(ip->idev, bn);
+    ah = (struct ahead*) bp->data;
+
+    if (ah->magic != AOUT_MAGIC) {
+        syserr(EINVAL);
+        goto _badf;
+    }
+
+    tmp = store_argv(path, argv);
+
     return 0;
 }
 
@@ -47,3 +76,4 @@ int upush(uint *esp, char *buf, int len) {
     memcpy(tmp, buf, len);
     return (*esp=tmp);
 }
+
