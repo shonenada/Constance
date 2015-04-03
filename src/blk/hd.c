@@ -39,10 +39,16 @@ int hd_start() {
     hd_dev.active = 1;
     if (bp->flag & B_DIRTY) {
         // write to disk
+        if (DEBUG) {
+            printk("write to disk\n");
+        }
         hd_out(BLK_SIZE/PBLK, bp->sector * BLK_SIZE / PBLK, 0, HD_CMD_WRITE);
         outsl(0x1F0, bp->data, 512/4);
     } else {
         // read from disk
+        if (DEBUG) {
+            printk("read from disk\n");
+        }
         hd_out(BLK_SIZE/PBLK, bp->sector * BLK_SIZE / PBLK, 0, HD_CMD_READ);
     }
     return 0;
@@ -83,6 +89,9 @@ int do_hd_intr(struct regs *rgs) {
 
     if (!(bp->flag & B_DIRTY)) {
         // read into memory from disk
+        if (DEBUG) {
+            printk("do_hd_intr(): load from disk\n");
+        }
         insl(0x1F0, bp->data, BLK_SIZE/4);
     }
 
@@ -96,5 +105,7 @@ int do_hd_intr(struct regs *rgs) {
 void hd_init() {
     hd_dev.next = hd_dev.prev = (struct buf *)&hd_dev;
     hd_dev.io_next = hd_dev.io_prev = (struct buf *)&hd_dev;
-    irq_install(0x2E, do_hd_intr);
+    irq_install(0x0E, do_hd_intr);
 }
+
+
