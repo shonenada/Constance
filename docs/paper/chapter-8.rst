@@ -8,4 +8,3 @@
 8.4 inode
 8.5 bitmap
 8.6 namei
-
