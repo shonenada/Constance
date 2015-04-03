@@ -83,7 +83,7 @@ int do_hd_intr(struct regs *rgs) {
 
     if (!(bp->flag & B_DIRTY)) {
         // read into memory from disk
-        insl(0x1F0, bp->data, 512/4);
+        insl(0x1F0, bp->data, BLK_SIZE/4);
     }
 
     bp->flag |= B_VALID;
