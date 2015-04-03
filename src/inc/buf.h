@@ -15,9 +15,9 @@ struct buf {
 };
 
 #define B_BUSY 0b1
-#define B_VALID 0b01
-#define B_DIRTY 0b001
-#define B_ERROR 0b0001
+#define B_VALID 0b10
+#define B_DIRTY 0b100
+#define B_ERROR 0b1000
 
 extern struct buf buffer[NBUF];
 extern struct buf bfreelist;
