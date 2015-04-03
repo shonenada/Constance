@@ -99,6 +99,23 @@ int pgd_free(struct pde* pgd) {
     return 0;
 }
 
+int pte_verify(void *addr, uint size) {
+    uint pg_addr;
+    struct pte* pte;
+    if (size < 0) {
+        return -1;
+    }
+    for(pg_addr=PTE_ADDR(addr);pg_addr<=PTE_ADDR(addr+size-1);pg_addr+=PAGE_SIZE) {
+        pte = pte_find(current->pdir, pg_addr);
+        if (!(pte->flag & PTE_RW)) {
+            do_wp_page(pg_addr);
+        } else if (!(pte->flag & PTE_P)) {
+            do_no_page(pg_addr);
+        }
+    }
+    return 0;
+}
+
 void flush_pgd() {
     lpgd(current->pdir);
 }

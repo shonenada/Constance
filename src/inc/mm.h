@@ -74,6 +74,7 @@ void ptab_init(struct pte *pt, uint flag);
 void pgd_init(struct pde *pgd);
 int pgd_copy(struct pde *to, struct pde *from);
 int pgd_free(struct pde *pgd);
+int pte_verify(void *addr, uint size);
 void flush_pgd();
 
 int bkslot(int size);
