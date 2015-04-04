@@ -1,7 +1,7 @@
 #ifndef __INODE_H
 #define __INODE_H
 
-#define ROOTINO 1
+#define ROOTINO 4
 
 // define inode for disk
 struct d_inode {
@@ -49,6 +49,9 @@ int itrunc(struct inode* ip);
 int iunlink(struct inode *ip);
 int lock_inode(struct inode *ip);
 int unlink_inode(struct inode *ip);
+
+void dump_inode(struct inode*);
+void dump_inodes();
 
 extern struct inode inodes[NINODE];
 

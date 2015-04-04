@@ -90,9 +90,9 @@ uint link_entry(struct inode *dip, char *name, uint len, uint ino) {
 }
 
 struct inode * _namei(char *path, uchar creat, uchar parent, char **name) {
-    struct inode *wip=NULL, *cdp=NULL;
-    ushort dev, ino, len;
     char* tmp;
+    ushort dev, ino, len;
+    struct inode *wip=NULL, *cdp=NULL;
 
     if (*path == '/') {
         wip = iget(rootdev, ROOTINO);
@@ -101,19 +101,21 @@ struct inode * _namei(char *path, uchar creat, uchar parent, char **name) {
         wip = iget(cdp->idev, cdp->inum);
     }
 
+    if ((wip->inum == ROOTINO) && (strncmp(path, "..", 2) == 0)) {
+        // Top of root fs
+        // do nothing
+    }
+
+    if ((wip->mode & S_IFMT) != S_IFDIR) {
+        iput(wip);
+        // signal
+        return NULL;
+    }
+
     while(*path != '\0') {
         if (*path == '/') {
             path++;
             continue;
-        }
-        if ((wip->inum == ROOTINO) && (strncmp(path, "..", 2) == 0)) {
-            // do nothing
-        }
-
-        if ((wip->mode & S_IFMT) != S_IFDIR) {
-            iput(wip);
-            // signal
-            return NULL;
         }
         tmp = strchr(path, '/');
         if (tmp == NULL) {
