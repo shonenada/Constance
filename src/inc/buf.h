@@ -38,5 +38,6 @@ struct buf* buf_read(uint dev, uint sector);
 int buf_write(struct buf* b);
 
 void dump_buf(struct buf* buf);
+void hexdump_buf(struct buf* buf);
 
 #endif

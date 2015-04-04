@@ -7,6 +7,7 @@
 #define DIRSIZE 14
 #define NINDBLK (BLK_SIZE/sizeof(ushort))
 
+
 // define super block struct
 struct d_sblk {
     ushort ninodes;    // number of inodes
@@ -15,9 +16,9 @@ struct d_sblk {
     ushort zmap_blks;    // space used by zone map. (blocks)
     ushort zone0;    // first data zone 
     ushort log_zone_size;    // size of data zone = (1024 << log_zone_size)
-    unsigned long max_size;    // max file size
-    ushort magic;    // minix 14/30 ID number
-    ushort state;    // mount state.
+    uint max_size;    // max file size
+    ushort magic;    // 138F
+    ushort state;
 };
 
 // define super block struct for memory
@@ -28,9 +29,9 @@ struct sblk {
     ushort zmap_blks;    // space used by zone map. (blocks)
     ushort zone0;    // first data zone 
     ushort log_zone_size;    // size of data zone = (1024 << log_zone_size)
-    unsigned long max_size;    // max file size
-    ushort magic;    // minix 14/30 ID number
-    ushort state;    // mount state.
+    uint max_size;    // max file size
+    ushort magic;    // 138F
+    ushort state;
 
     ushort dev;
     uint flag;
@@ -71,6 +72,9 @@ int readi(struct inode *ip, char *buf, uint off, uint cnt);
 int writei(struct inode* ip, char *buf, uint off, uint cnt);
 struct sblk* do_mount(ushort dev, struct inode *ip);
 
+void dump_sblk(struct sblk* blk);
+void dump_mnts();
+
 // Inodes per block
 #define IPB (BLK_SIZE/SIZE_INODE)
 // Block containing block i
@@ -79,12 +83,14 @@ struct sblk* do_mount(ushort dev, struct inode *ip);
 #define BPB (BLK_SIZE*8)
 
 #define BBLOCK(sp,nr) (((sp)->imap_blks) + ((nr)/BPB) + 2) 
+#define INOBLOCK(sp,ino) (((sp)->imap_blks) + ((sp)->zmap_blks) + (((ino)-1)/IPB) + 2)
 
 #define NAMELEN 12
 
-#define DEVNO(major,minor) ((ushort)(((uchar)major<<8)+(uchar)minor))
 #define NODEV (DEVNO(0,0))
-ushort rootdev;
+#define DEVNO(major,minor) ((ushort)(((uchar)major<<8)+(uchar)minor))
+
+extern ushort rootdev;
 
 #define min(a,b) (a>b?b:a)
 
