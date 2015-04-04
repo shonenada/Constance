@@ -39,9 +39,6 @@ int hd_start() {
     hd_dev.active = 1;
     if (bp->flag & B_DIRTY) {
         // write to disk
-        if (DEBUG) {
-            printk("write to disk\n");
-        }
         hd_out(BLK_SIZE/PBLK, bp->sector * BLK_SIZE / PBLK, 0, HD_CMD_WRITE);
         outsl(0x1F0, bp->data, 512/4);
     } else {
@@ -91,7 +88,6 @@ int do_hd_intr(struct regs *rgs) {
 
     bp->flag |= B_VALID;
     bp->flag &= ~B_DIRTY;
-    wakeup((uint) bp);
     hd_start();
     return 0;
 }
