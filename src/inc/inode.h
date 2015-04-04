@@ -1,14 +1,14 @@
 #ifndef __INODE_H
 #define __INODE_H
 
-#define ROOTINO 1
+#define ROOTINO 4
 
 // define inode for disk
 struct d_inode {
     ushort mode;
     ushort uid;
-    unsigned long size;
-    unsigned long time;
+    uint size;
+    uint time;
     uchar gid;
     uchar nlinks;
     ushort zone[9];
@@ -18,8 +18,8 @@ struct d_inode {
 struct inode {
     ushort mode;
     ushort uid;
-    unsigned long size;
-    unsigned long mtime;
+    uint size;
+    uint mtime;
     uchar gid;
     uchar nlinks;
     ushort zone[9];
@@ -31,7 +31,7 @@ struct inode {
     ushort atime;
     ushort ctime;
 };
-#define SIZE_INODE sizeof(struct inode)
+#define SIZE_INODE sizeof(struct d_inode)
 
 #define NINODE 128
 
@@ -49,6 +49,9 @@ int itrunc(struct inode* ip);
 int iunlink(struct inode *ip);
 int lock_inode(struct inode *ip);
 int unlink_inode(struct inode *ip);
+
+void dump_inode(struct inode*);
+void dump_inodes();
 
 extern struct inode inodes[NINODE];
 

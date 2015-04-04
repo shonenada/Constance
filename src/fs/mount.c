@@ -6,10 +6,12 @@
 #include <file.h>
 
 struct sblk *rootsp = NULL;
-ushort rootdev = DEVNO(1, 0);
+ushort rootdev = DEVNO(0, 1);
+struct sblk mnt[NMOUNT] = {{0,},};
 
 struct sblk* do_mount(ushort dev, struct inode *ip) {
     struct sblk *sbp;
+
     for (sbp=&mnt[0]; sbp<&mnt[NMOUNT]; sbp++) {
         if (sbp->dev == dev) {
             sbp->flag |= S_LOCK;
@@ -24,6 +26,7 @@ struct sblk* do_mount(ushort dev, struct inode *ip) {
             goto _found;
         }
     }
+
     panic("do_mount: no free mount slot");
     return NULL;
 
@@ -60,4 +63,11 @@ int do_unmount(ushort dev) {
     sbp->flag = 0;
     iput(sbp->imnt);
     return 0;
+}
+
+void dump_mnts() {
+    int i;
+    for(i=0;i<NMOUNT;i++) {
+        dump_sblk(&mnt[i]);
+    }
 }

@@ -16,8 +16,10 @@ struct buf bfreelist;
  */
 void buf_init() {
     int i;
-    bfreelist.next = &bfreelist;
     bfreelist.prev = &bfreelist;
+    bfreelist.next = &bfreelist;
+    bfreelist.io_prev = &bfreelist;
+    bfreelist.io_next = &bfreelist;
     for (i=0;i<NBUF;i++) {
         buffer[i].next = bfreelist.next;
         buffer[i].prev = &bfreelist;
@@ -50,7 +52,7 @@ _loop:
     // not found
     bp = bfreelist.prev;
     while (bp != &bfreelist) {
-        if (!(bp->flag & B_BUSY) && !(bp->flag & B_DIRTY)) {
+        if ((!(bp->flag & B_BUSY)) && (!(bp->flag & B_DIRTY))) {
             bp->dev = dev;
             bp->sector = sector;
             bp->flag |= B_BUSY;
@@ -67,16 +69,11 @@ int buf_relse(struct buf* bp) {
         panic("buf_relse(): buffer released");
         return -1;
     }
-
-    bp->next->prev = bp->prev;
-    bp->prev->next = bp->next;
-    bp->next = &bfreelist.next;
-    bp->prev = &bfreelist;
-    bfreelist.next->prev = bp;
-    bfreelist.next = bp;
-
     bp->flag &= ~B_BUSY;
-
+    bp->io_next = &bfreelist;
+    bp->io_prev = bfreelist.io_prev;
+    bp->io_prev->io_next = bp;
+    bp->io_next->io_prev = bp;
     wakeup((uint) bp);
     return 0;
 }
@@ -84,6 +81,9 @@ int buf_relse(struct buf* bp) {
 struct buf* buf_read(uint dev, uint sector) {
     struct buf *bp;
     bp = buf_get(dev, sector);
+    if (bp == NULL) {
+        panic("buf_read(): not buf for dev and sector");
+    }
     if (!(bp->flag & B_VALID)) {
         hd_sync(bp);
     }
@@ -97,4 +97,49 @@ int buf_write(struct buf *bp) {
     }
     bp->flag |= B_DIRTY;
     hd_sync(bp);
+}
+
+void dump_buffer_freelist() {
+    int i;
+    for(i=0;i<10;i++) {
+        printk("%d(%x): dev=%d, prev=%x, next=%x\n", i, &buffer[i], buffer[i].dev, buffer[i].prev, buffer[i].next);
+    }
+    printk("free=%x, prev=%x, next=%x\n", &bfreelist, bfreelist.prev, bfreelist.next);
+}
+
+void dump_loop_free_list() {
+    int i=0;
+    struct buf *bp;
+    bp = bfreelist.next;
+    while (bp != &bfreelist && i < 20) {
+        printk("%d:%x ", i++, bp->next);
+        bp = bp->next;
+    }
+    printk("\n");
+}
+
+void dump_buf(struct buf* buf) {
+    int i;
+    char* str = buf->data;
+    printk("buf(%x): flag=%d, dev=%x, sector=%x\n", buf, buf->flag, buf->dev, buf->sector);
+    printk("data: ");
+    for(i=0;i<100;i++) {
+        printk("%x ", str[i]);
+    }
+    printk("\n");
+}
+
+void hexdump_buf(struct buf* buf) {
+    int i;
+    char * str = (char*)(buf);
+    for(i=0;i<80;i++) {
+        printk("%x", str[i]);
+        if (i % 4 == 0) {
+            printk(" ");
+        }
+         if (i % 32 == 0) {
+            printk("\n");
+        }
+           }
+    printk("\n");
 }

@@ -10,14 +10,13 @@ struct dev hd_dev = {0, NULL, NULL, NULL, NULL};
 // wait for hard disk
 int hd_ready() {
     int retry = 100000;
-    while (--retry && ((inportb(HD_STATUS) & (HD_READ | HD_BUSY)) != HD_READ))
+    while (--retry || ((inportb(HD_STATUS)) & HD_BUSY))
         ;    // loop, do nothing
     return retry;
 }
 
 int hd_out(int sector_num, int sector, int dev_no, int rw) {
-    if (!hd_ready())
-        panic("HD Controller is not ready");
+    hd_ready();
 
     outportb(0x3F6, 0);    // Interrupt
     outportb(HD_CMD_PORT0+2, sector_num);    // 0x1f2, the number of sectors
@@ -40,11 +39,14 @@ int hd_start() {
     hd_dev.active = 1;
     if (bp->flag & B_DIRTY) {
         // write to disk
-        hd_out(1, bp->sector, bp->dev, HD_CMD_WRITE);
+        if (DEBUG) {
+            printk("write to disk\n");
+        }
+        hd_out(BLK_SIZE/PBLK, bp->sector * BLK_SIZE / PBLK, 0, HD_CMD_WRITE);
         outsl(0x1F0, bp->data, 512/4);
     } else {
         // read from disk
-        hd_out(1, bp->sector, bp->dev, HD_CMD_READ);
+        hd_out(BLK_SIZE/PBLK, bp->sector * BLK_SIZE / PBLK, 0, HD_CMD_READ);
     }
     return 0;
 }
@@ -56,17 +58,18 @@ int hd_sync(struct buf *bp) {
     if (!(bp->flag & B_BUSY))
         panic("hd_sync(): Buffer is not busy");
     if ((bp->flag & (B_VALID|B_DIRTY)) == B_VALID)
-        panic("hd_sync(): synced");
+        return 0;
     if (bp->dev < 0)
         panic("hd_sync(): device not set");
 
-    bp->io_prev = (struct buf *)&hd_dev;
+    bp->io_prev = (struct buf *)(&hd_dev);
     bp->io_next = hd_dev.io_next;
     hd_dev.io_next->io_prev = bp;
     hd_dev.io_next = bp;
 
-    if (hd_dev.active == 0)
+    if (hd_dev.active == 0) {
         hd_start();
+    }
 
     return 0;
 }
@@ -83,7 +86,7 @@ int do_hd_intr(struct regs *rgs) {
 
     if (!(bp->flag & B_DIRTY)) {
         // read into memory from disk
-        insl(0x1F0, bp->data, 512/4);
+        insl(0x1F0, bp->data, BLK_SIZE/4);
     }
 
     bp->flag |= B_VALID;
@@ -94,7 +97,7 @@ int do_hd_intr(struct regs *rgs) {
 }
 
 void hd_init() {
-    hd_dev.buf_next = hd_dev.buf_prev = (struct buf *)&hd_dev;
+    hd_dev.next = hd_dev.prev = (struct buf *)&hd_dev;
     hd_dev.io_next = hd_dev.io_prev = (struct buf *)&hd_dev;
-    irq_install(0x2E, do_hd_intr);
+    irq_install(0x0E, do_hd_intr);
 }

@@ -4,9 +4,9 @@
 #include <sched.h>
 #include <fs.h>
 #include <inode.h>
-#include <buf.h>
 #include <blk.h>
 #include <stat.h>
+#include <buf.h>
 
 struct inode inodes[NINODE];
 
@@ -60,10 +60,11 @@ int iload(struct inode *ip) {
     if (sp == NULL) {
         panic("cannot get super block");
     }
-    bp = buf_read(ip->idev, IBLOCK(ip->inum));
+    bp = buf_read(ip->idev, INOBLOCK(sp, ip->inum));
     // error handle
     inp = (struct d_inode*) bp->data;
     memcpy(ip, &inp[(ip->inum-1)%IPB], sizeof(struct d_inode));
+    buf_relse(bp);
     return 0;
 }
 
@@ -170,4 +171,16 @@ int unlink_inode(struct inode *ip) {
     ip->flag &= ~(I_LOCK | I_WANTED);
     sti();
     return 0;
+}
+
+void dump_inode(struct inode* ip) {
+    printk("address=%x\n", ip);
+    printk("mode: %x ", ip->mode);
+    printk("uid: %x ", ip->uid);
+    printk("size: %x ", ip->size);
+    printk("gid: %x ", ip->gid);
+    printk("count: %x ", ip->count);
+    printk("idev: %x ", ip->idev);
+    printk("inum: %x ", ip->inum);
+    printk("flag: %x\n", ip->flag);
 }
