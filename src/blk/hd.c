@@ -46,9 +46,6 @@ int hd_start() {
         outsl(0x1F0, bp->data, 512/4);
     } else {
         // read from disk
-        if (DEBUG) {
-            printk("read from disk\n");
-        }
         hd_out(BLK_SIZE/PBLK, bp->sector * BLK_SIZE / PBLK, 0, HD_CMD_READ);
     }
     return 0;
@@ -89,9 +86,6 @@ int do_hd_intr(struct regs *rgs) {
 
     if (!(bp->flag & B_DIRTY)) {
         // read into memory from disk
-        if (DEBUG) {
-            printk("do_hd_intr(): load from disk\n");
-        }
         insl(0x1F0, bp->data, BLK_SIZE/4);
     }
 
