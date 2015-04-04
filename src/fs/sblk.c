@@ -46,7 +46,7 @@ int balloc (ushort dev) {
 
     sbp = getsblk(dev);
     for (i=0;i<sbp->nzones;i++) {
-        bp = buf_read(dev,BBLOCK(sbp, i));
+        bp = buf_read(dev, BBLOCK(sbp, i));
         bl = find_free(bp->data, BLK_SIZE);
         if (bl < 0) {
             continue;
