@@ -58,7 +58,7 @@ int hd_sync(struct buf *bp) {
     if (!(bp->flag & B_BUSY))
         panic("hd_sync(): Buffer is not busy");
     if ((bp->flag & (B_VALID|B_DIRTY)) == B_VALID)
-        panic("hd_sync(): synced");
+        return 0;
     if (bp->dev < 0)
         panic("hd_sync(): device not set");
 
@@ -101,5 +101,3 @@ void hd_init() {
     hd_dev.io_next = hd_dev.io_prev = (struct buf *)&hd_dev;
     irq_install(0x0E, do_hd_intr);
 }
-
-
