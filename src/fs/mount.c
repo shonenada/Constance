@@ -6,7 +6,7 @@
 #include <file.h>
 
 struct sblk *rootsp = NULL;
-ushort rootdev = DEVNO(1, 0);
+ushort rootdev = DEVNO(0, 1);
 struct sblk mnt[NMOUNT] = {{0,},};
 
 struct sblk* do_mount(ushort dev, struct inode *ip) {
@@ -21,8 +21,8 @@ struct sblk* do_mount(ushort dev, struct inode *ip) {
 
     for(sbp=&mnt[0];sbp<&mnt[NMOUNT];sbp++) {
         if (sbp->dev == NODEV) {
-            sblk_load(sbp);
             sbp->dev = dev;
+            sblk_load(sbp);
             goto _found;
         }
     }
