@@ -16,11 +16,15 @@
 enum task_state {TASK_RUNNING, TASK_INTERRUPTIBLE, TASK_UNINTERRUPTIBLE, TASK_ZOMBLE, TASK_STOPPED};
 
 struct context {
-    uint edi;
-    uint esi;
-    uint ebx;
-    uint ebp;
     uint eip;
+    uint esp;
+    uint ebx;
+    uint ecx;
+    uint edx;
+    uint esi;
+    uint edi;
+    uint ebp;
+    uint __sigmask;
 };
 
 struct tss_entry {
@@ -87,7 +91,9 @@ void schedule();
 int find_empty();
 void switch_to(struct ktask* target);    // switch from current to target task
 void do_swtch(struct context* old, struct context* new);
+struct ktask* kspawn(void *func);
 
-void dump_procs();
+void dump_tasks();
+void dump_task(struct ktask*);
 
 #endif
