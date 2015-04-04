@@ -64,6 +64,7 @@ int iload(struct inode *ip) {
     // error handle
     inp = (struct d_inode*) bp->data;
     memcpy(ip, &inp[(ip->inum-1)%IPB], sizeof(struct d_inode));
+    buf_relse(bp);
     return 0;
 }
 
