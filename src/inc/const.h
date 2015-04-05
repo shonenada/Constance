@@ -23,6 +23,7 @@ typedef unsigned short ushort;
 #define NTASKS 64    // Max process numbers
 #define NGDT (4+NTASKS+1)
 #define BLK_SIZE 1024
+#define PBLK 512
 #define NBUF (0x200000/BLK_SIZE)
 #define NMOUNT 4
 #define NFILE 64

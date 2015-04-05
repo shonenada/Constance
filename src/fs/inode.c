@@ -4,15 +4,15 @@
 #include <sched.h>
 #include <fs.h>
 #include <inode.h>
-#include <buf.h>
 #include <blk.h>
 #include <stat.h>
+#include <buf.h>
 
 struct inode inodes[NINODE];
 
 struct inode * iget(uint dev, uint num) {
-    struct inode *ip;
     struct sblk *sp;
+    struct inode *ip;
 
 _loop:
     for (ip=inodes; ip<inodes+NINODE; ip++) {
@@ -22,7 +22,6 @@ _loop:
                 sleep((uint) ip);
                 goto _loop;
             }
-
             if (ip->flag & I_MOUNT) {
                 for (sp=mnt;sp<mnt+NMOUNT;sp++) {
                     if (ip == sp->imnt) {
@@ -52,42 +51,41 @@ _loop:
 }
 
 int iload(struct inode *ip) {
+    struct buf *bp;
     struct sblk *sp;
     struct d_inode *inp;
-    struct buf *bp;
 
     sp = getsblk(ip->idev);
     if (sp == NULL) {
         panic("cannot get super block");
     }
-    bp = buf_read(ip->idev, IBLOCK(ip->inum));
+    bp = buf_read(ip->idev, INOBLOCK(sp, ip->inum));
     // error handle
     inp = (struct d_inode*) bp->data;
     memcpy(ip, &inp[(ip->inum-1)%IPB], sizeof(struct d_inode));
+    buf_relse(bp);
     return 0;
 }
 
 void iupdate(struct inode *ip) {
+    struct buf *bp;
     struct sblk *sbp;
     struct d_inode *inp;
-    struct buf *bp;
 
     sbp = getsblk(ip->idev);
     if (sbp == NULL) {
         panic("iupdate: error super block");
     }
-
-    bp = buf_read(ip->idev, IBLOCK(ip->inum));
-
+    bp = buf_read(ip->idev, INOBLOCK(sbp, ip->inum));
     inp = (struct d_inode*) bp->data;
-    memcpy(&inp[(ip->inum-1)%IPB], ip->zone, sizeof(struct d_inode));
+    memcpy(&inp[(ip->inum-1)%IPB], ip, sizeof(struct d_inode));
     ip->flag &= ~I_DIRTY;
-    hd_sync(bp);
+    buf_write(bp);
+    buf_relse(bp);
 }
 
 int iput(struct inode *ip) {
     ushort dev;
-
     if (ip == NULL) {
         panic("iput: wrong inode");
     }
@@ -170,4 +168,67 @@ int unlink_inode(struct inode *ip) {
     ip->flag &= ~(I_LOCK | I_WANTED);
     sti();
     return 0;
+}
+
+// alloc inode
+int ialloc (ushort dev) {
+    uint i, ino;
+    int r;
+    struct sblk *sbp;
+    struct buf *bp;
+    sbp = getsblk(dev);
+
+    for (i=0;i<sbp->ninodes;i++) {
+        bp = buf_read(dev, INOBLOCK(sbp, i));
+        r = find_free(bp->data, BLK_SIZE);
+        if (r < 0) {
+            continue;
+        }
+        ino = i*BLK_SIZE + r;
+        bp->data[ino/8] |= 1 << (ino%8);
+        hd_sync(bp);
+        unlink_sb(sbp);
+        return ino;
+    }
+    unlink_sb(sbp);
+    panic("no enough inode");
+    return -1;
+}
+
+// free inode
+int ifree (ushort dev, uint ino) {
+    struct buf *bp;
+    struct sblk *sbp;
+    sbp = getsblk(dev);
+    if ((ino <= 0) || (ino >= sbp->ninodes)) {
+        panic("inode no exist");
+    }
+    bp = buf_read(dev, INOBLOCK(sbp, ino));
+    /**
+    if ((bp->data[ino/8] & (1 << (ino%8))) == 0) {
+        panic("inode is free");
+    }
+    */
+    bp->data[ino/8] &= ~(1<<(ino%8));
+    hd_sync(bp);
+    buf_relse(bp);
+    unlink_sb(sbp);
+    return 0;
+}
+
+void dump_inode(struct inode* ip) {
+    int i;
+    printk("address=%x\n", ip);
+    printk("mode: %x ", ip->mode);
+    printk("uid: %x ", ip->uid);
+    printk("size: %x ", ip->size);
+    printk("gid: %x ", ip->gid);
+    printk("count: %x ", ip->count);
+    printk("idev: %x ", ip->idev);
+    printk("inum: %x ", ip->inum);
+    printk("flag: %x\n", ip->flag);
+    for(i=0;i<9;i++) {
+        printk("zone[%d]=%d ", i, ip->zone[i]);
+    }
+    printk("\n");
 }

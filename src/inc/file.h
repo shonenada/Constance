@@ -56,7 +56,7 @@ int do_access(struct inode *ip, uint mode);
 int do_open(char *path, uint flag, uint mode);
 int do_close(int fd);
 int do_dup(int fd);
-uint find_entry(struct inode* dip, char *name, uint len);
+int find_entry(struct inode* dip, char *name, uint len);
 int unlink_entry(struct inode *dip, char *name, int len);
 uint link_entry(struct inode *dip, char *name, uint len, uint ino);
 struct file* falloc(int fd);

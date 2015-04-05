@@ -7,27 +7,29 @@
 #include <buf.h>
 #include <blk.h>
 
-uint find_entry(struct inode* dip, char *name, uint len) {
+int find_entry(struct inode* dip, char *name, uint len) {
     struct buf *bp;
     struct dire *dep;
     int i, j, bn=0, ino=0;
 
     if ((dip->mode & S_IFMT) != S_IFDIR) {
-        // TODO signal fault
+//        syserr(EFAULT);
         return 0;
     }
     len = min(len, NAMELEN);
 
     for(i=0;i<dip->size/BLK_SIZE+1;i++) {
-        bn = bmap(dip, i);
+        bn = bmap(dip, i, 0);
         bp = buf_read((uint) dip->idev, bn);
         dep = (struct dire*) bp->data;
-        for (j=0;i<BLK_SIZE/(sizeof(struct dire))+1;j++) {
+        for(j=0;j<BLK_SIZE/(sizeof(struct dire))+1;j++) {
             if (len == strlen(dep[j].name) && strncmp(name, dep[j].name, len) == 0) {
                 ino = dep[j].inode;
+                buf_relse(bp);
                 return ino;
             }
         }
+        buf_relse(bp);
     }
     return 0;
 }
@@ -44,7 +46,7 @@ int unlink_entry(struct inode *dip, char *name, int len) {
     len = min(len, NAMELEN);
 
     for(i=0;i<dip->size/BLK_SIZE+1;i++) {
-        bn = bmap(dip, i);
+        bn = bmap(dip, i, 0);
         bp = buf_read(dip->idev, bn);
         dep = (struct dire*) bp->data;
         for(j=0;j<BLK_SIZE/(sizeof(struct dire))+1;j++) {
@@ -90,9 +92,9 @@ uint link_entry(struct inode *dip, char *name, uint len, uint ino) {
 }
 
 struct inode * _namei(char *path, uchar creat, uchar parent, char **name) {
-    struct inode *wip=NULL, *cdp=NULL;
-    ushort dev, ino, len;
     char* tmp;
+    ushort dev, ino, len;
+    struct inode *wip=NULL, *cdp=NULL;
 
     if (*path == '/') {
         wip = iget(rootdev, ROOTINO);
@@ -101,19 +103,20 @@ struct inode * _namei(char *path, uchar creat, uchar parent, char **name) {
         wip = iget(cdp->idev, cdp->inum);
     }
 
+    if ((wip->inum == ROOTINO) && (strncmp(path, "..", 2) == 0)) {
+        // Top of root fs, do nothing.
+    }
+
+    if ((wip->mode & S_IFMT) != S_IFDIR) {
+        iput(wip);
+        // signal
+        return NULL;
+    }
+
     while(*path != '\0') {
         if (*path == '/') {
             path++;
             continue;
-        }
-        if ((wip->inum == ROOTINO) && (strncmp(path, "..", 2) == 0)) {
-            // do nothing
-        }
-
-        if ((wip->mode & S_IFMT) != S_IFDIR) {
-            iput(wip);
-            // signal
-            return NULL;
         }
         tmp = strchr(path, '/');
         if (tmp == NULL) {
@@ -128,6 +131,7 @@ struct inode * _namei(char *path, uchar creat, uchar parent, char **name) {
             len = tmp - path;
         }
         ino = find_entry(wip, path, len);
+
         if (ino <= 0) {
             if (creat == 0) {
                 iput(wip);
@@ -150,4 +154,17 @@ struct inode* namei(char *path, uchar creat) {
 
 struct inode* namei_parent(char *path, char **name) {
     return _namei(path, 0, 1, name);
+}
+
+void dump_dire(struct dire* dir) {
+    printk("inode: %d, name:%s", dir->inode, dir->name);
+}
+
+void hexdump_dire(struct dire* dir) {
+    int i;
+    char* str = (char*)dir;
+    for(i=0;i<sizeof(struct dire);i++) {
+        printk("%x ", str[i]);
+    }
+    printk("\n");
 }

@@ -3,18 +3,18 @@ SECTIONS {
     __bios__ = 0xa0000;
     vgamemptr = 0xb8000;
     .text 0x100000 : {
-        code = .;
+        __code__ = .;
         bin/entry.o(.text) bin/main.o(.text) *(.text);
-        *(.rodata);
         . = ALIGN(4096);
     }
     .data : {
-        data = .;
+        __data__ = .;
+        *(.rodata);
         *(.data)
         . = ALIGN(4096);
     }
     .bss : {
-        bss = .;
+        __bss__ = .;
         *(.bss);
         . = ALIGN(4096);
     }

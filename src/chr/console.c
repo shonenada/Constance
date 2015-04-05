@@ -103,6 +103,9 @@ void printk(char *fmt, ...) {
                 case 's':
                     puts((char*)(*arg++));
                     break;
+                case 'b':
+                    print_number((unsigned long) *arg++, 2);
+                    break;
                 case 'o':
                     print_number((unsigned long) *arg++, 8);
                     break;
