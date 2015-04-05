@@ -148,7 +148,7 @@ int readi(struct inode *ip, char *buf, uint off, uint cnt) {
 
     for(tot=0;tot<cnt;tot+=m, buf+=m) {
         m = min(cnt - tot, BLK_SIZE - off % BLK_SIZE);
-        bn = bmap(ip, off/BLK_SIZE);
+        bn = bmap(ip, off/BLK_SIZE, 0);
         if (bn == 0) {
             memset(bp->data + off % BLK_SIZE, 0, m);
         } else {
@@ -171,7 +171,7 @@ int writei(struct inode* ip, char *buf, uint off, uint cnt) {
     }
     for (tot=0;tot<cnt; tot+=m, off+=m, buf+=m) {
         m = min(cnt - tot, BLK_SIZE - off % BLK_SIZE);
-        bn = bmap(ip, off/BLK_SIZE);
+        bn = bmap(ip, off/BLK_SIZE, 0);
         if (bn == 0) {
             panic("writei: bad block");
         } else {

@@ -6,10 +6,10 @@
 #include <file.h>
 
 int do_open(char *path, uint flag, uint mode) {
-    struct inode *ip;
-    struct file *fp;
-    ushort dev;
     int fd;
+    ushort dev;
+    struct file *fp;
+    struct inode *ip;
 
     if (flag & O_CREAT) {
         ip = namei(path, 1);
@@ -46,6 +46,7 @@ int do_open(char *path, uint flag, uint mode) {
     if (flag & O_TRUNC) {
         itrunc(ip);
     }
+
     unlink_inode(ip);
     fp->flags = flag;
     fp->ino = ip;

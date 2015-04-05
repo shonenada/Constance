@@ -68,19 +68,17 @@ int iload(struct inode *ip) {
 }
 
 void iupdate(struct inode *ip) {
+    struct buf *bp;
     struct sblk *sbp;
     struct d_inode *inp;
-    struct buf *bp;
 
     sbp = getsblk(ip->idev);
     if (sbp == NULL) {
         panic("iupdate: error super block");
     }
     bp = buf_read(ip->idev, INOBLOCK(sbp, ip->inum));
-
-
     inp = (struct d_inode*) bp->data;
-    memcpy(&inp[(ip->inum-1)%IPB], ip->zone, sizeof(struct d_inode));
+    memcpy(&inp[(ip->inum-1)%IPB], ip, sizeof(struct d_inode));
     ip->flag &= ~I_DIRTY;
     buf_write(bp);
     buf_relse(bp);
@@ -219,6 +217,7 @@ int ifree (ushort dev, uint ino) {
 }
 
 void dump_inode(struct inode* ip) {
+    int i;
     printk("address=%x\n", ip);
     printk("mode: %x ", ip->mode);
     printk("uid: %x ", ip->uid);
@@ -228,4 +227,8 @@ void dump_inode(struct inode* ip) {
     printk("idev: %x ", ip->idev);
     printk("inum: %x ", ip->inum);
     printk("flag: %x\n", ip->flag);
+    for(i=0;i<9;i++) {
+        printk("zone[%d]=%d ", i, ip->zone[i]);
+    }
+    printk("\n");
 }

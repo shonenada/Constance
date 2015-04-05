@@ -64,7 +64,7 @@ int find_free(uchar *bitmap, int size);
 int sblk_load(struct sblk *sbp);
 int sblk_update(struct sblk *sbp);
 void putsp(struct sblk* sbp);
-uint bmap(struct inode *ip, uint bn);
+uint bmap(struct inode *ip, uint bn, uchar creat);
 int do_read(int fd, char* buf, int cnt);
 int do_write(int fd, char *buf, int cnt);
 int do_lseek(uint fd, int off, int whence);
