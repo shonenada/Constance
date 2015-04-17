@@ -33,9 +33,20 @@ void init() {
     do_fcntl(1, F_SETFD, 0);
     do_fcntl(2, F_SETFD, 0);
 
-    do_exec("/bin/init", NULL);
+    do_exec("/bin/test", NULL);
 
-    for(;;);
+    for(;;) {
+    }
+}
+
+void print_hello() {
+    printk("\n");
+    printk("                 _____                 _                       \n");
+    printk("                /  __ \\               | |                      \n");
+    printk("                | /  \\/ ___  _ __  ___| |_ __ _ _ __   ___ ___ \n");
+    printk("                | |    / _ \\| '_ \\/ __| __/ _` | '_ \\ / __/ _ \\\n");
+    printk("                | \\__/| (_) | | | \\__ | || (_| | | | | (_|  __/\n");
+    printk("                 \\____/\\___/|_| |_|___/\\__\\__,_|_| |_|\\___\\___|\n\n");
 }
 
 void kmain() {
@@ -52,7 +63,7 @@ void kmain() {
     tty_init();    puts("tty init..........done\n");
     sti();
 
-    printk("\nHello Constance!\nstart at: %d\n\n", start_time()); 
+    print_hello();
 
     kspawn(&init);
 

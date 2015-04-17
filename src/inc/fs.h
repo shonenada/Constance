@@ -92,6 +92,4 @@ void dump_mnts();
 
 extern ushort rootdev;
 
-#define min(a,b) (a>b?b:a)
-
 #endif
