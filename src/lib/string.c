@@ -68,7 +68,8 @@ char* strchr(const char *str, char c) {
 
 char *strncpy (char *dst, const char *src, uint cnt) {
     char *tmp = dst;
-    while(cnt-- && (*dst++ == *src++));
+    while(cnt && (*dst++ = *src++))
+        cnt--;
     if (cnt > 0) {
         while(--cnt){
             *dst++ = '\0';

@@ -24,6 +24,7 @@ void buf_init() {
         buffer[i].next = bfreelist.next;
         buffer[i].prev = &bfreelist;
         buffer[i].dev = NODEV;
+        buffer[i].sector = -1;
         bfreelist.next->prev = &buffer[i];
         bfreelist.next = &buffer[i];
     }
@@ -38,7 +39,7 @@ _loop:
     while (bp != &bfreelist) {
         if (bp->dev == dev && bp->sector == sector) {
             // found, check flags
-            if (!(bp->flag & B_BUSY)) {
+            if ((bp->flag & B_BUSY) == 0) {
                 bp->flag |= B_BUSY;
                 return bp;
             } else {
@@ -69,12 +70,11 @@ int buf_relse(struct buf* bp) {
         panic("buf_relse(): buffer released");
         return -1;
     }
-    bp->flag &= ~B_BUSY;
+    bp->flag &= ~(B_BUSY|B_VALID);
     bp->io_next = &bfreelist;
     bp->io_prev = bfreelist.io_prev;
     bp->io_prev->io_next = bp;
     bp->io_next->io_prev = bp;
-    wakeup((uint) bp);
     return 0;
 }
 
@@ -91,12 +91,15 @@ struct buf* buf_read(uint dev, uint sector) {
 }
 
 int buf_write(struct buf *bp) {
+    uint flag;
     if (!(bp->flag & B_BUSY)) {
         panic("buf_write(): buffer block is not busy");
         return -1;
     }
-    bp->flag |= B_DIRTY;
+    flag = bp->flag;
+    bp->flag &= ~(B_DIRTY | B_ERROR);
     hd_sync(bp);
+    hd_ready();
 }
 
 void dump_buffer_freelist() {

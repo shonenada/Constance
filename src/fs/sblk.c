@@ -92,49 +92,6 @@ int bzero (ushort dev, uint bn) {
     return 0;
 }
 
-// alloc inode
-int ialloc (ushort dev) {
-    uint i, ino;
-    int r;
-    struct sblk *sbp;
-    struct buf *bp;
-    sbp = getsblk(dev);
-
-    for (i=0;i<sbp->ninodes;i++) {
-        bp = buf_read(dev, IBLOCK(i));
-        r = find_free(bp->data, BLK_SIZE);
-        if (r < 0) {
-            continue;
-        }
-        ino = i*BLK_SIZE + r;
-        bp->data[ino/8] |= 1 << (ino%8);
-        hd_sync(bp);
-        unlink_sb(sbp);
-        return ino;
-    }
-    unlink_sb(sbp);
-    panic("no enough inode");
-    return -1;
-}
-
-// free inode
-int ifree (ushort dev, uint ino) {
-    struct buf *bp;
-    struct sblk *sbp;
-    sbp = getsblk(dev);
-    if ((ino <= 0) || (ino >= sbp->ninodes)) {
-        panic("inode no exist");
-    }
-    bp = buf_read(dev, IBLOCK(ino));
-    if ((bp->data[ino/8] & (1 << (ino%8))) == 0) {
-        panic("inode is free");
-    }
-    bp->data[ino/8] &= ~(1<<(ino%8));
-    hd_sync(bp);
-    unlink_sb(sbp);
-    return 0;
-}
-
 // find free block by bitmap
 int find_free(uchar *bitmap, int size) {
     int byte, i, j;

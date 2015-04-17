@@ -14,14 +14,18 @@
 void init() {
     struct inode *ip;
 
-    current->pgrp = 1;
     do_mount(rootdev, NULL);
+    ip = iget(rootdev, 1);
+    current->pgrp = 1;
     current->wdir = ip;
     current->iroot = ip;
     ip->count += 2;
     iput(ip);
 
-    do_open("/dev/tty0", O_RDWR, 0);
+    if(do_open("/dev/tty0", O_RDWR, 0) < 0) {
+        panic("bad /dev/tty0 \n");
+    }
+
     do_dup(0);    // stdout
     do_dup(0);    // stderr
 
@@ -29,9 +33,20 @@ void init() {
     do_fcntl(1, F_SETFD, 0);
     do_fcntl(2, F_SETFD, 0);
 
-//    do_exec("/bin/init", NULL);
+    do_exec("/bin/test", NULL);
 
-    for(;;);
+    for(;;) {
+    }
+}
+
+void print_hello() {
+    printk("\n");
+    printk("                 _____                 _                       \n");
+    printk("                /  __ \\               | |                      \n");
+    printk("                | /  \\/ ___  _ __  ___| |_ __ _ _ __   ___ ___ \n");
+    printk("                | |    / _ \\| '_ \\/ __| __/ _` | '_ \\ / __/ _ \\\n");
+    printk("                | \\__/| (_) | | | \\__ | || (_| | | | | (_|  __/\n");
+    printk("                 \\____/\\___/|_| |_|___/\\__\\__,_|_| |_|\\___\\___|\n\n");
 }
 
 void kmain() {
@@ -39,16 +54,21 @@ void kmain() {
     idt_init();    puts("idt init..........done\n");
     video_init();    puts("video init..........done\n");
     page_init();     puts("page init..........done\n");
-    keyboard_init();    puts("keyboard init..........done\n");
-    hd_init();    puts("hd init..........done\n");
-    buf_init();    puts("buf init..........done\n");
-    tty_init();    puts("tty init..........done\n");
-    timer_init();    puts("timer init..........done\n");
-    time_init();    puts("time init..........done\n");
     task0_init();    puts("task0 init.........done\n");
+    time_init();    puts("time init..........done\n");
+    timer_init();    puts("timer init..........done\n");
+    buf_init();    puts("buf init..........done\n");
+    hd_init();    puts("hd init..........done\n");
+    keyboard_init();    puts("keyboard init..........done\n");
+    tty_init();    puts("tty init..........done\n");
     sti();
 
-    printk("\n\nHello Constance!\nstart at: %d", start_time()); 
+    print_hello();
 
-    for(;;);
+    kspawn(&init);
+
+    for(;;) {
+        sti();
+        schedule();
+    }
 }

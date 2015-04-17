@@ -1,7 +1,7 @@
 #ifndef __INODE_H
 #define __INODE_H
 
-#define ROOTINO 4
+#define ROOTINO 1
 
 // define inode for disk
 struct d_inode {
