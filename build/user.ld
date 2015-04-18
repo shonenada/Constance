@@ -1,7 +1,8 @@
 SECTIONS {
-    . = 0x8100000;
+    . = 0x8000020;
     .text : {
         __text__ = .;
+        bin/libsys/entry.o(.text) *(.text)
         *(.rodata .gnu.linkonce.*)
         . = ALIGN(0x1000);
         __text_end__ = .;

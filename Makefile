@@ -11,7 +11,7 @@ boot: boot.img
 
 kernel: kernel.img
 
-bochs: kernel.img rootfs.img
+bochs: kernel.img rootfs
 	@mkdir -p log
 	bochs -f .bochsrc -q
 
