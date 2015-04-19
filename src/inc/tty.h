@@ -27,7 +27,7 @@ extern struct tty ttys[NTTY];
 #define TTY_ECHO 0x2
 
 #define EMPTY(tq) (tq->head==tq->tail)
-#define LEFT(tq) ((tq->tail-tq->head-1) & (TTY_BUF_SIZE-1))
+#define LEFT(tq) ((tq->tail-tq->head-1) - (TTY_BUF_SIZE-1))
 #define FULL(tq) (LEFT(tq)==0)
 #define INC(tq) (tq->tail=(tq->tail+1)%TTY_BUF_SIZE)
 #define DEC(tq) (tq->head=(tq->head+1)%TTY_BUF_SIZE)
