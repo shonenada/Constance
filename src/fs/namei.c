@@ -6,6 +6,7 @@
 #include <stat.h>
 #include <buf.h>
 #include <blk.h>
+#include <errno.h>
 
 int find_entry(struct inode* dip, char *name, uint len) {
     struct buf *bp;
@@ -13,7 +14,7 @@ int find_entry(struct inode* dip, char *name, uint len) {
     int i, j, bn=0, ino=0;
 
     if ((dip->mode & S_IFMT) != S_IFDIR) {
-//        syserr(EFAULT);
+        syserr(EFAULT);
         return 0;
     }
     len = min(len, NAMELEN);
@@ -39,7 +40,7 @@ int unlink_entry(struct inode *dip, char *name, int len) {
     struct dire *dep;
     int i, j, bn=0, ino=0;
     if ((dip->mode & S_IFMT) != S_IFDIR) {
-        // signal FAULT
+        syserr(EFAULT);
         return 0;
     }
 
@@ -66,7 +67,7 @@ uint link_entry(struct inode *dip, char *name, uint len, uint ino) {
     int r, off;
 
     if ((dip->mode & S_IFMT) != S_IFDIR) {
-        // signal not dir
+        syserr(ENOTDIR);
         return 0;
     }
 
@@ -103,21 +104,22 @@ struct inode * _namei(char *path, uchar creat, uchar parent, char **name) {
         wip = iget(cdp->idev, cdp->inum);
     }
 
-    if ((wip->inum == ROOTINO) && (strncmp(path, "..", 2) == 0)) {
-        // Top of root fs, do nothing.
-    }
-
-    if ((wip->mode & S_IFMT) != S_IFDIR) {
-        iput(wip);
-        // signal
-        return NULL;
-    }
-
     while(*path != '\0') {
         if (*path == '/') {
             path++;
             continue;
         }
+
+        if ((wip->inum == ROOTINO) && (strncmp(path, "..", 2) == 0)) {
+            // Top of root fs, do nothing.
+        }
+
+       if ((wip->mode & S_IFMT) != S_IFDIR) {
+            iput(wip);
+            syserr(EISDIR);
+            return NULL;
+        }
+
         tmp = strchr(path, '/');
         if (tmp == NULL) {
             if (parent) {
@@ -149,7 +151,9 @@ struct inode * _namei(char *path, uchar creat, uchar parent, char **name) {
 }
 
 struct inode* namei(char *path, uchar creat) {
-    return _namei(path, creat, 0, NULL);
+    struct inode* ip;
+    ip = _namei(path, creat, 0, NULL);
+    return ip;
 }
 
 struct inode* namei_parent(char *path, char **name) {
