@@ -73,8 +73,9 @@ int keyboard_handler(struct regs *rgs) {
     }
 
     if (!(kbcode & 0x80)) {
-        if (map[kbcode] != '\0')
-            tty_input(&ttys[0], map[kbcode]);
+        if (chr != '\0') {
+            tty_input(&ttys[0], chr);
+        }
         // putch(map[kbcode]);
     } else {
         mode &= ~E0SC;

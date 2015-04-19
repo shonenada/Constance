@@ -43,31 +43,35 @@ int tty_parse(struct tty* tp) {
     char chr;
     struct tty_queue *read_q, *secondary_q;
     
+    read_q = &(tp->read_q);
+    secondary_q = &(tp->secondary);
+
     // if TTY_RAW is set, do not parse any char
     if (tp->flag & TTY_RAW) {
-        while((chr = tty_dequeue(&tp->read_q))) {
-            tty_enqueue(&tp->secondary, chr);
+        while((chr = tty_dequeue(read_q)) >= 0) {
+            tty_enqueue(secondary_q, chr);
         }
         return 0;
     }
 
-    read_q = &(tp->read_q);
-    secondary_q = &(tp->secondary);
-
-    while(!EMPTY(read_q) && !FULL(secondary_q)) {
-        chr = tty_dequeue(&tp->read_q);
+    while((chr = tty_dequeue(read_q)) >= 0) {
         switch (chr) {
             // TODO
             case CTAB:
                 for(i=0;i<4;i++)
-                    tty_enqueue(&tp->secondary, ' ');
-                return 0;
+                    tty_enqueue(secondary_q, ' ');
                 break;
             case CERASE:
-                tty_erase(&tp->secondary);
+                // need to refactor
+                if (COUNT(secondary_q) == 1) {
+                    tty_output(tp, chr);
+                    tty_print(tp);
+                }
+
+                tty_erase(secondary_q);
                 break;
             default:
-                tty_enqueue(&tp->secondary, chr);
+                tty_enqueue(secondary_q, chr);
                 break;
         }
     }
@@ -84,6 +88,9 @@ int tty_open(ushort dev) {
     tp->flag = TTY_ECHO;
     tp->putc = &putch;
     tp->pgrp = current->pgrp;
+    tp->read_q.head = tp->read_q.tail = 0;
+    tp->write_q.head = tp->write_q.tail = 0;
+    tp->secondary.head = tp->secondary.tail = 0;
     return 0;
 }
 
@@ -112,12 +119,12 @@ int tty_output(struct tty* tp, char chr) {
 
 int tty_input(struct tty *tp, char chr) {
     struct tty_queue *secondary = &(tp->secondary);
-    tty_enqueue(&tp->read_q, chr);
+    tty_enqueue(&(tp->read_q), chr);
     tty_parse(tp);
 
     if (tp->flag & TTY_ECHO) {
         if (chr == CERASE) {
-            if (EMPTY(secondary))
+            if (COUNT(secondary) <= 0)
                 return 0;
         }
         tty_output(tp, chr);
@@ -130,7 +137,7 @@ int tty_input(struct tty *tp, char chr) {
         }
     }
     if (chr == CEOF || chr == '\n') {
-        tty_erase(&tp->secondary);
+        tty_erase(secondary);
         wakeup((uint)tp);
         return 0;
     }
@@ -141,15 +148,16 @@ int tty_read(ushort dev, char *buf, uint cnt) {
     int i;
     char chr;
     struct tty* tp;
-    struct tty_queue *secondary = &(tp->secondary);
+    struct tty_queue *secondary;
 
     if (MINOR(dev) >= NTTY) {
         syserr(ENODEV);
         return -1;
     }
     tp = &ttys[MINOR(dev)];
-    if (LEFT(secondary) < cnt) {
-        sleep((uint) tp);
+    secondary = &(tp->secondary);
+    if (COUNT(secondary) < cnt) {
+        sleep((uint) tp, PRITTY);
     }
     for(i=0;i<cnt;i++) {
         if ((chr=tty_dequeue(&tp->secondary)) < 0) {
@@ -160,13 +168,12 @@ int tty_read(ushort dev, char *buf, uint cnt) {
     return (i + 1);
 }
 
-
 int tty_write(ushort dev, char *buf, uint cnt) {
     struct tty *tp;
     int i;
 
     if (MINOR(dev) >= NTTY) {
-        syserr(ENODEV);    // TODO
+        syserr(ENODEV);
         return -1;
     }
     tp = &ttys[MINOR(dev)];
@@ -177,17 +184,20 @@ int tty_write(ushort dev, char *buf, uint cnt) {
     return 0;
 }
 
-void tty_init() {
-    ttys[0].flag = TTY_ECHO;
-    ttys[0].putc = &putch;
-}
-
 char tty_erase(struct tty_queue *tp) {
-    if (FULL(tp)) {
+    if (EMPTY(tp)) {
         return -1;
     }
     tp->tail = (tp->tail - 1 + TTY_BUF_SIZE) % TTY_BUF_SIZE;
     return 0;
+}
+
+void tty_init() {
+    ttys[0].flag = TTY_ECHO;
+    ttys[0].putc = &putch;
+    ttys[0].read_q.head = ttys[0].read_q.tail = 0;
+    ttys[0].write_q.head = ttys[0].write_q.tail = 0;
+    ttys[0].secondary.head = ttys[0].secondary.tail = 0;
 }
 
 void dump_tty(struct tty *tp) {
