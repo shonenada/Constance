@@ -1,5 +1,6 @@
 #include <const.h>
 #include <system.h>
+#include <errno.h>
 #include <sched.h>
 #include <blk.h>
 #include <buf.h>
@@ -7,23 +8,30 @@
 #include <inode.h>
 #include <fs.h>
 #include <file.h>
+#include <tty.h>
 
 struct file files[NFILE];
 
 int do_read(int fd, char* buf, int cnt) {
+    int r;
+    ushort dev;
     struct file *fp;
     struct inode *ip;
-    uint dev;
-    int r;
 
     fp = current->files[fd];
     if (fd < 0 || fd > NOFILE || fp == NULL) {
-        // signal enfile
+#ifdef DEBUG
+        printk("do_read(): fd %d is invalid\n", fd);
+#endif
+        syserr(EBADF);
         return -1;
     }
 
-    if (fp->flags & O_WRONLY) {
-        // signal
+    if (fp->flags & O_WRONLY && !(fp->flags & O_RDWR)) {
+#ifdef DEBUG
+        printk("do_read(): fd %d is not WRONLY\n", fd);
+#endif
+        syserr(EBADF);
         return -1;
     }
 
@@ -33,7 +41,7 @@ int do_read(int fd, char* buf, int cnt) {
             break;
         case S_IFCHR:
             dev = ip->zone[0];
-            //r = ()
+            r = tty_read(dev, buf, cnt);
             break;
         case S_IFDIR:
         case S_IFREG:
@@ -52,17 +60,21 @@ int do_read(int fd, char* buf, int cnt) {
 }
 
 int do_write(int fd, char *buf, int cnt) {
-    struct file *fp;
-    struct inode *ip;
     int r, off;
     uint dev;
+    struct file *fp;
+    struct inode *ip;
+
     fp = current->files[fd];
     if (fd < 0 || fd > NOFILE || fp == NULL) {
-        // signal ENFILE;
+        syserr(ENFILE);
         return -1;
     }
     if (fp->flags & O_RDONLY) {
-        // signal EBADF
+#ifdef DEBUG
+        printk("do_write(): fp is RDONLY\n");
+#endif
+        syserr(EBADF);
         return -1;
     }
 
@@ -79,7 +91,7 @@ int do_write(int fd, char *buf, int cnt) {
             break;
         case S_IFCHR:
             dev = ip->zone[0];
-            // r = ()
+            r = tty_write(dev, buf, cnt);
             break;
 
         case S_IFDIR:
@@ -102,11 +114,14 @@ int do_lseek(uint fd, int off, int whence) {
 
     fp = current->files[fd];
     if ((fd >= NOFILE) || (fp == NULL) || (fp->ino == NULL)) {
-        // signal EBADF
+#ifdef DEBUG
+        printk("do_lseek(): fd >= NOFILE || fp == NULL, fd=%d\n", fd);
+#endif
+        syserr(EBADF);
         return -1;
     }
     if (fp->ino->mode & S_IFIFO) {
-        // signal ESPIPE
+        syserr(ESPIPE);
         return -1;
     }
 
@@ -131,7 +146,7 @@ int do_lseek(uint fd, int off, int whence) {
     return fp->offset;
 
 _einval:
-    // EINVAL
+    syserr(EINVAL);
     return -1;
 }
 
