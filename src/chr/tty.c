@@ -16,7 +16,6 @@ int tty_enqueue(struct tty_queue* queue, char chr) {
     if (FULL(queue)) {
         return -1;
     }
-
     queue->buf[queue->tail] = chr;
     INC(queue);
     return 0;
@@ -88,12 +87,20 @@ int tty_open(ushort dev) {
     return 0;
 }
 
+int tty_close(ushort dev) {
+    if (MINOR(dev) >= NTTY) {
+        syserr(ENODEV);
+        return -1;
+    }
+    return 0;
+}
+
 int tty_print(struct tty* tp) {
-    void (*putc)(char);
+    void (*_putc)(char);
     char chr;
-    putc = tp->putc;
-    while (chr=tty_dequeue(&tp->write_q) >= 0) {
-        putc(chr);
+    _putc = tp->putc;
+    while ((chr=tty_dequeue(&tp->write_q)) >= 0) {
+        _putc(chr);
     }
     return 0;
 }
@@ -181,4 +188,21 @@ char tty_erase(struct tty_queue *tp) {
     }
     tp->tail = (tp->tail - 1 + TTY_BUF_SIZE) % TTY_BUF_SIZE;
     return 0;
+}
+
+void dump_tty(struct tty *tp) {
+    printk("tty(%x): pgrp=%x, dev=%x, putc=%x, flag=%b, read_q=%x, write_q=%x, secondary=%x\n", tp, tp->pgrp, tp->dev, tp->putc, tp->flag, tp->read_q, tp->write_q, tp->secondary);
+}
+
+void dump_tty_queue(struct tty_queue *qp) {
+    int i;
+    printk("tty_queue(%x): head=%x, tail=%x, buf=%x\n", qp,
+            qp->head,
+            qp->tail,
+            qp->buf);
+    printk("buf: ");
+    for(i=0;i<TTY_BUF_SIZE;i++) {
+        putch(qp->buf[i]);
+    }
+    printk("\n");
 }

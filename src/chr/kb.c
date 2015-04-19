@@ -2,6 +2,7 @@
 #include <segment.h>
 #include <console.h>
 #include <keybd.h>
+#include <tty.h>
 
 static uint mode = 0;
 
@@ -72,7 +73,9 @@ int keyboard_handler(struct regs *rgs) {
     }
 
     if (!(kbcode & 0x80)) {
-        putch(map[kbcode]);
+        if (map[kbcode] != '\0')
+            tty_input(&ttys[0], map[kbcode]);
+        // putch(map[kbcode]);
     } else {
         mode &= ~E0SC;
     }
