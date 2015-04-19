@@ -6,7 +6,7 @@ extern struct vchar vgamemptr[25][80];
 // Attributes of background color, foreground color
 int attrib = 0x0F;
 // x and y cursor coordinates;
-int csr_x = 0, csr_y = 0;
+csr_x = 0, csr_y = 0;
 
 void flush_csr(void) {
     uint pos = csr_y * 80 + csr_x;
@@ -41,12 +41,13 @@ void putch(char c) {
     // Handle for special char.
     // backspace
     if (c == '\b') {
-        if (csr_x > 0) {
-            vgamemptr[csr_y][csr_x].v_char = ' ';
+        if (csr_x != 0) {
             csr_x--;
+            vgamemptr[csr_y][csr_x].v_char = ' ';
         }
-        else if (csr_x == 0){
-            if (csr_y > 0) csr_y--;
+        else {
+            if (csr_y > 0)
+                csr_y--;
             csr_x = 79;
             vgamemptr[csr_y][csr_x].v_char = ' ';
         }
