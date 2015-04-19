@@ -23,7 +23,9 @@ rootfs.img:
 	@mkdir /tmp/c_mnt_root
 	@sudo mount -o loop -t minix bin/rootfs.img /tmp/c_mnt_root
 	@cp -r ./bin/usr root/bin
-	@sudo cp -r ./root/* /tmp/c_mnt_root
+	@cp -r ./root/* /tmp/c_mnt_root
 	@sudo mknod /tmp/c_mnt_root/dev/tty0 c 1 0
+	@mkdir /tmp/c_mnt_root/usr
+	@echo "hello from Constance" > /tmp/c_mnt_root/usr/hello.txt
 	@sudo umount /tmp/c_mnt_root
 	@rm -rf /tmp/c_mnt_root
