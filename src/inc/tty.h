@@ -54,5 +54,7 @@ int tty_read(ushort dev, char *buf, uint cnt);
 int tty_write(ushort dev, char *buf, uint cnt);
 void tty_init();
 char tty_erase(struct tty_queue *tq);
+int tty_open(ushort dev);
+int tty_close(ushort dev);
 
 #endif
