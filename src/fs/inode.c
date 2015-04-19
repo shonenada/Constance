@@ -1,6 +1,7 @@
 #include <const.h>
 #include <system.h>
 #include <asm.h>
+#include <tty.h>
 #include <sched.h>
 #include <fs.h>
 #include <inode.h>
@@ -101,10 +102,9 @@ int iput(struct inode *ip) {
         dev = ip->zone[0];
         switch (ip->mode & S_IFMT) {
             case S_IFBLK:
-                // TODO
                 break;
             case S_IFCHR:
-                // TODO
+                tty_close(dev);
                 break;
         }
         iupdate(ip);
