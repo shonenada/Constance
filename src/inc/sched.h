@@ -7,11 +7,20 @@
 #include <stat.h>
 #include <file.h>
 #include <sig.h>
+#include <vm.h>
 
 #define TSS0 0x5
 #define TSS_SEL(n) ((n<<4)+(TSS0<<3))    // offset of tss in GDT, size of descriptor = 8 bytes
 #define LDT0 (TSS0+1)
 #define LDT_SEL(n) ((n<<4)+(LDT0<<3))
+
+#define PINOD (-90)
+#define PBIO (-50)
+#define PRITTY 10
+#define PDEFAULT 20
+#define PWAIT 40
+#define PSLEP 90
+#define PUSER 100
 
 enum task_state {TASK_RUNNING, TASK_INTERRUPTIBLE, TASK_UNINTERRUPTIBLE, TASK_ZOMBLE, TASK_STOPPED};
 
@@ -54,7 +63,9 @@ struct tss_entry {
 struct ktask {
     int state;     // state of this task
     long counter;    // running time
-    long priority;
+    uint priority;
+    uint nice;
+    uint cpu;
     uint ret;
     uint signal;
     uint sigmask;
@@ -83,15 +94,17 @@ extern struct ktask task0;
 extern struct ktask *current;
 extern struct ktask *tasks[NTASKS];
 
-void sleep(uint channel);
-void sleep_on(struct ktask*, uint channel);
+void sleep(uint channel, uint pri);
 void wakeup(uint channel);
-void wakeup_on(struct ktask*, uint channel);
+void cal_pri(struct ktask *task);
+void sched_cpu();
 void schedule();
 int find_empty();
 void switch_to(struct ktask* target);    // switch from current to target task
 void do_swtch(struct context* old, struct context* new);
 struct ktask* kspawn(void *func);
+extern void _jump_u(uint eip, uint esp);
+void jump_to_user_mode();
 
 void dump_tasks();
 void dump_task(struct ktask*);

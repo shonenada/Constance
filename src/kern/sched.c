@@ -1,73 +1,103 @@
 #include <system.h>
+#include <const.h>
 #include <asm.h>
 #include <segment.h>
 #include <sched.h>
 #include <console.h>
+#include <mm.h>
 
-void sleep(uint channel) {
-    cli();
-    if (current == tasks[0]) {    // tasks[0] is init process
+void sleep(uint channel, uint pri) {
+    if (current == tasks[0]) {
         panic("tasks[0] is trying to sleep");
     }
-    current->channel = channel;
-    current->state = TASK_UNINTERRUPTIBLE;
-    sti();
-    schedule();
-}
-
-void sleep_on(struct ktask* task, uint channel) {
-    cli();
-    if (!task) {
-        return;
+    if (pri < 0) {
+        cli();
+        current->channel = channel;
+        current->priority = pri;
+        current->state = TASK_UNINTERRUPTIBLE;
+        sti();
+        schedule();
+    } else {
+        cli();
+        current->channel = channel;
+        current->priority = pri;
+        current->state = TASK_INTERRUPTIBLE;
+        sti();
+        schedule();
     }
-    task->channel = channel;
-    task->state = TASK_UNINTERRUPTIBLE;
-    sti(); schedule();
 }
 
 void wakeup(uint channel) {
+    int _pid;
     struct ktask *t;
-    for (t=&tasks[0];t<&tasks[NTASKS];t++) {
-        if (t->state == TASK_UNINTERRUPTIBLE && t->channel == channel) {
+    for(_pid=0;_pid<NTASKS;_pid++) {
+        t = tasks[_pid];
+        if (t == NULL) {
+            continue;
+        }
+        if (t->channel == channel) {
             t->channel = 0;
             t->state = TASK_RUNNING;
         }
     }
 }
 
-void wakeup_on(struct ktask* task, uint channel) {
-    cli();
-    if (!task) {
-        return;
+void cal_pri(struct ktask *task) {
+    int pri;
+    pri = 2 * task->nice + PUSER + task->cpu / 4;
+    if (pri > 128) {
+        pri = 128;
+    } else if (pri <= -126) {
+        pri = -126;
     }
-    if (task->channel == channel) {
-        task->state = TASK_RUNNING;
+    task->priority = pri;
+}
+
+// call per second
+void sched_cpu() {
+    uint i;
+    struct ktask *task;
+    for(i=0;i<NTASKS;i++) {
+        if ((task=tasks[i])) {
+            task->cpu /= 2;
+            if (task->priority > PUSER) {
+                cal_pri(task);
+            }
+        }
     }
-    sti();
 }
 
 void schedule() {
-    int idx;
-    int _pid;    // start from next task
-    int next_pid = current->pid + 1; 
-    struct ktask *task;
-    for(_pid=next_pid;_pid<next_pid+NTASKS;_pid++) {
-        idx = _pid % NTASKS;
-        task = tasks[idx];
-        if (!task || task == NULL || task == 0)
+    int _pid;
+    char _pri = 127;
+    struct ktask *task=NULL, *next_task=NULL;
+
+    for(_pid=0;_pid<NTASKS;_pid++) {
+        task = tasks[_pid];
+        if (!task || task == NULL || task == 0 || task == current)
             continue;
-        if (tasks[idx] != NULL && tasks[idx]->state == TASK_RUNNING)
-            switch_to(tasks[idx]);
+        if (task->state == TASK_RUNNING || task->pid == 0) {
+            if (task->priority <= _pri) {
+                _pri = task->priority;
+                next_task = task;
+            }
+        }
+    }
+    if (next_task == NULL) {
+        _pri = tasks[0]->priority;
+        next_task = tasks[0];
+    }
+    if (current != next_task) {
+        switch_to(next_task);
     }
 }
 
 // refer to linux/sched.h (swtich_to)
 void switch_to(struct ktask* target) {
     struct ktask* old;
-
     if (current == target)
         return;
-    tss.esp0 = (uint)target + 0x1000;
+    tss.esp0 = (uint)target + PAGE_SIZE;
     old = current;
     current = target;
     lpgd(target->pdir);
@@ -85,13 +115,17 @@ int find_empty() {
     return -1;
 }
 
-void dump_procs() {
+void dump_tasks() {
     int i;
     struct ktask *task;
     for (i=0;i<NTASKS;i++) {
         task = tasks[i];
         if (task) {
-            printk("pid: %d\n", task->pid);
+            printk("pid: %d, state=%d\n", task->pid, task->state);
         }
     }
+}
+
+void dump_task(struct ktask* task) {
+    printk("task(%x): state=%x \n", task, task->state);
 }
