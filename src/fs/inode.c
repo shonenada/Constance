@@ -20,7 +20,7 @@ _loop:
         if(ip->idev == dev && ip->inum == num) {
             if (ip->flag & I_LOCK) {
                 ip->flag |= I_WANTED;
-                sleep((uint) ip);
+                sleep((uint) ip, PINOD);
                 goto _loop;
             }
             if (ip->flag & I_MOUNT) {
@@ -154,7 +154,7 @@ int itrunc(struct inode* ip) {
 
 int lock_inode(struct inode *ip) {
     while (ip->flag & I_LOCK) {
-        sleep((uint) ip);
+        sleep((uint) ip, PINOD);
     }
     ip->flag |= I_LOCK;
     return 0;

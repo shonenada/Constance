@@ -14,7 +14,7 @@ _loop:
         if (dev == sbp->dev) {
             if (sbp->flag & S_LOCK) {
                 sbp->flag |= S_WANTED;
-                sleep((uint) sbp);
+                sleep((uint) sbp, PINOD);
                 goto _loop;
             }
             return sbp;

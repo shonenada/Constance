@@ -43,7 +43,7 @@ _loop:
                 bp->flag |= B_BUSY;
                 return bp;
             } else {
-                sleep((uint) bp);
+                sleep((uint) bp, PBIO);
                 goto _loop;
             }
         }
