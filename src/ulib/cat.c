@@ -13,7 +13,7 @@ int do_cat(char *path) {
     }
 
     while((n = do_read(fd, buf, 32)) > 0) {
-        do_write(0, buf, n);
+        do_write(1, buf, n);
     }
     do_close(fd);
 }

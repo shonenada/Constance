@@ -6,7 +6,7 @@
 #include <inode.h>
 #include <errno.h>
 
-int do_cd(char *path) {
+int do_chdir(char *path) {
     struct inode* ip;
     ip = namei(path, 0);
     if (ip == NULL) {
