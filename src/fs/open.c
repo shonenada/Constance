@@ -1,9 +1,11 @@
 #include <const.h>
 #include <system.h>
+#include <errno.h>
 #include <time.h>
 #include <sched.h>
 #include <inode.h>
 #include <file.h>
+#include <tty.h>
 
 int do_open(char *path, uint flag, uint mode) {
     int fd;
@@ -24,17 +26,21 @@ int do_open(char *path, uint flag, uint mode) {
     } else {
         ip = namei(path, 0);
         if (ip == NULL) {
-            // signal ENFILE
+#ifdef DEBUG
+            printk("do_open(): ip is null");
+#endif
+            syserr(ENFILE);
+            iput(ip);
             return -1;
         }
 
         dev = ip->zone[0];
         switch(ip->mode && S_IFMT) {
             case S_IFBLK:
-                //
+                // TODO
                 break;
             case S_IFCHR:
-                //
+                tty_open(dev);
                 break;
         }
     }
@@ -46,7 +52,6 @@ int do_open(char *path, uint flag, uint mode) {
     if (flag & O_TRUNC) {
         itrunc(ip);
     }
-
     unlink_inode(ip);
     fp->flags = flag;
     fp->ino = ip;
@@ -57,11 +62,22 @@ int do_open(char *path, uint flag, uint mode) {
 int do_close(int fd) {
     struct file *fp;
     if ((fd > NOFILE) || (fd < 0)) {
-        // signal EBADF
+#ifdef DEBUG
+        printk("do_close(): fd > NOFILE || fd < 0, fd=%d\n", fd);
+#endif
+        syserr(EBADF);
         return -1;
     }
 
-    fp = current->files[fd] = NULL;
+    fp = current->files[fd];
+    if (fp == NULL) {
+#ifdef DEBUG
+        printk("fp == NULL\n");
+#endif
+        syserr(EBADF);
+        return -1;
+    }
+    current->files[fd] = NULL;
     iput(fp->ino);
     fp->count--;
     if (fp->count <= 0) {
@@ -78,7 +94,10 @@ int do_dup(int fd) {
 
     fp = current->files[fd];
     if (fd >= NOFILE || fp == NULL) {
-        // signal EBADF
+#ifdef DEBUG
+        printk("do_dup(): fd >= NOFILE || fp == NULL, fd=%d\n", fd);
+#endif
+        syserr(EBADF);
         return -1;
     }
     if ((newfd = ufalloc()) < 0) {
@@ -94,7 +113,10 @@ int do_dup2(int fd, int newfd) {
     struct file *fp;
     fp = current->files[fd];
     if (fd >= NOFILE || fp == NULL) {
-        // signal EBADF
+#ifdef DEBUG
+        printk("do_dup2(): fd >= NOFILE || fp == NULL, fd=%d\n", fd);
+#endif
+        syserr(EBADF);
         return -1;
     }
     do_close(newfd);
@@ -111,7 +133,7 @@ int ufalloc() {
             return i;
         }
     }
-    // signal
+    syserr(ENFILE);
     return -1;
 }
 
@@ -126,7 +148,7 @@ struct file* falloc(int fd) {
             return fp;
         }
     }
-    // signal
+    syserr(EMFILE);
     panic("falloc: no free file");
     return NULL;
 }
