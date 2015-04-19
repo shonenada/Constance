@@ -82,7 +82,7 @@ struct page *pfind(uint pn) {
 
 struct pte* pmap(struct pde *pgd, void* vaddr, struct page *page, uchar flag) {
     struct pte *pte;
-    pte = pte_find(pgd, vaddr);
+    pte = pte_find(pgd, vaddr, 1);
     pte->ppn = page->idx;
     pte->flag = flag;
     lpgd(pgd);
@@ -100,4 +100,17 @@ void page_init() {
     set_task_gate(0x0E, do_page_fault);
     lpgd(pgd0);
     page_enable();
+}
+
+int get_paddr(struct pde* pdir, int vaddr) {
+    struct pte *pte;
+    pte = pte_find(pdir, vaddr, 0);
+    if (pte == NULL) {
+        return -1;
+    }
+    return (int)(pte->ppn | POFF(vaddr));
+}
+
+void dump_page(struct page* pg) {
+    printk("count=%x, flag=%x, idx=%x, next=%x\n", pg->count, pg->flag, pg->idx, pg->next);
 }

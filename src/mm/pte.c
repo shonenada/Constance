@@ -5,7 +5,7 @@
 #include <page.h>
 #include <sched.h>
 
-struct pte* pte_find(struct pde* pgd, uint vaddr) {
+struct pte* pte_find(struct pde* pgd, uint vaddr, uint creat) {
     uint pdx;
     struct pde *pde;
     struct pte *pt;
@@ -15,6 +15,8 @@ struct pte* pte_find(struct pde* pgd, uint vaddr) {
     pde = &pgd[pdx];
 
     if ((pde->flag & PTE_P) == 0) {
+        if (creat == 0)
+            return NULL;
         pg = palloc();
         pde->flag = PTE_P | PTE_U | PTE_RW;
         pde->ppn = pg->idx;
@@ -22,7 +24,6 @@ struct pte* pte_find(struct pde* pgd, uint vaddr) {
         memset(pt, 0, PAGE_SIZE);
         flush_pgd();
     }
-
     pt = (struct pte*)(pde->ppn * PAGE_SIZE);
     return &pt[PT_INDEX(vaddr)];
 }
@@ -106,7 +107,7 @@ int pte_verify(void *addr, uint size) {
         return -1;
     }
     for(pg_addr=PTE_ADDR(addr);pg_addr<=PTE_ADDR(addr+size-1);pg_addr+=PAGE_SIZE) {
-        pte = pte_find(current->pdir, pg_addr);
+        pte = pte_find(current->pdir, pg_addr, 1);
         if (!(pte->flag & PTE_RW)) {
             do_wp_page(pg_addr);
         } else if (!(pte->flag & PTE_P)) {
@@ -118,4 +119,8 @@ int pte_verify(void *addr, uint size) {
 
 void flush_pgd() {
     lpgd(current->pdir);
+}
+
+void dump_pte(struct pte* pte) {
+    printk("flag=%x, avl=%x, ppn=%x\n", pte->flag, pte->avl, pte->ppn);
 }

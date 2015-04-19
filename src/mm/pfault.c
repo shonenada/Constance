@@ -31,7 +31,7 @@ int do_wp_page(uint addr) {
     struct pte *pte;
     struct page *page;
 
-    pte = pte_find(current->pdir, addr);
+    pte = pte_find(current->pdir, addr, 1);
     if (pte == NULL) {
         panic("do_wp_page(): wrong addr");
         return -1;
@@ -57,6 +57,9 @@ int do_wp_page(uint addr) {
 }
 
 int do_no_page(uint addr) {
+#ifdef DEBUG
+    printk("addr=%x\n", addr);
+#endif
     struct page *page;
 
     page = palloc();
