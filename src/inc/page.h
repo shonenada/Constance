@@ -27,4 +27,6 @@ void pm_init();
 void mm_init();
 void page_init();
 
+void dump_page(struct page* pg);
+
 #endif

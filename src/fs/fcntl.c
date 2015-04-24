@@ -117,3 +117,7 @@ int do_mknod(char *path, int mode, ushort dev) {
     iput(ip);
     return 0;
 }
+
+void dump_file(struct file *fp) {
+    printk("fp=%x: flags=%b, count=%x, offset=%x, ino=%x\n", fp, fp->flags, fp->count, fp->offset, fp->ino);
+}

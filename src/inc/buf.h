@@ -39,5 +39,6 @@ int buf_write(struct buf* b);
 
 void dump_buf(struct buf* buf);
 void hexdump_buf(struct buf* buf);
+void dump_buffer_freelist();
 
 #endif

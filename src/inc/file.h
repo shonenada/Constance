@@ -66,4 +66,6 @@ struct inode * _namei(char *path, uchar creat, uchar parent, char **name);
 struct inode* namei(char *path, uchar creat);
 struct inode* namei_parent(char *path, char **name);
 
+void dump_file(struct file *fp);
+
 #endif

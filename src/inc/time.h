@@ -21,5 +21,6 @@ void keyboard_init();
 
 void time_init();
 long timestamp();
+void timer_wait(int sec);
 
 #endif
