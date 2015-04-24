@@ -16,7 +16,7 @@ struct inode * iget(uint dev, uint num) {
     struct inode *ip;
 
 _loop:
-    for (ip=inodes; ip<inodes+NINODE; ip++) {
+    for (ip=&inodes[0]; ip<&inodes[NINODE]; ip++) {
         if(ip->idev == dev && ip->inum == num) {
             if (ip->flag & I_LOCK) {
                 ip->flag |= I_WANTED;
@@ -37,7 +37,7 @@ _loop:
             return ip;
         }
     }
-    for (ip=inodes;ip<inodes+NINODE;ip++) {
+    for (ip=&inodes[0];ip<&inodes[NINODE];ip++) {
         if (ip->count == 0) {
             ip->idev = dev;
             ip->inum = num;
@@ -88,7 +88,7 @@ void iupdate(struct inode *ip) {
 int iput(struct inode *ip) {
     ushort dev;
     if (ip == NULL) {
-        panic("iput: wrong inode");
+        return -1;
     }
     ip->flag |= I_LOCK;
     if (ip->count > 0) {
