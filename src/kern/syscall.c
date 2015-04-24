@@ -4,7 +4,7 @@
 #include <sched.h>
 #include <unistd.h>
 #include <inode.h>
-#include <namei.h>
+#include <fs.h>
 
 int errno = 0;
 
@@ -83,8 +83,8 @@ int sys_write(struct regs* rgs) {
 // int open(path, flag, mode);
 int sys_open(struct regs* rgs) {
     char* path = (char*)(rgs->ebx);
-    int flag = rgs->flag;
-    int mode = rgs->mode;
+    int flag = rgs->ebx;
+    int mode = rgs->ecx;
 
     return do_open(path, flag, mode);
 }

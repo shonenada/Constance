@@ -29,7 +29,7 @@ int do_chdir(char *path) {
 
     current->wdir = ip;
     ip->count++;
-    iput(ip);
+    unlink_inode(ip);
 
     return 0;
 }
