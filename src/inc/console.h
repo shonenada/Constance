@@ -41,4 +41,7 @@ void video_init(void);
 void print_number(uint, uint);
 void printk(char*, ...);
 
+int csr_x;
+int csr_y;
+
 #endif
