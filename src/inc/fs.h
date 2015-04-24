@@ -51,6 +51,7 @@ struct sblk mnt[NMOUNT];
 struct dire {
     ushort inode;
     char name[DIRSIZE];
+    char __padding[16];
 };
 
 struct sblk *getsblk(ushort dev);

@@ -6,7 +6,7 @@
 struct file {
     char flags;
     char count;
-    char offset;
+    uint offset;
     struct inode *ino;
 };
 
