@@ -151,9 +151,7 @@ struct inode * _namei(char *path, uchar creat, uchar parent, char **name) {
 }
 
 struct inode* namei(char *path, uchar creat) {
-    struct inode* ip;
-    ip = _namei(path, creat, 0, NULL);
-    return ip;
+    return _namei(path, creat, 0, NULL);
 }
 
 struct inode* namei_parent(char *path, char **name) {

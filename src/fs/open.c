@@ -139,7 +139,7 @@ int ufalloc() {
 
 struct file* falloc(int fd) {
     struct file *fp;
-    for(fp =&files[0]; fp<&files[NFILE]; fp++) {
+    for(fp=&files[0]; fp<&files[NFILE]; fp++) {
         if (fp->count == 0) {
             fp->count = 1;
             current->files[fd] = fp;
