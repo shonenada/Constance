@@ -2,7 +2,7 @@
 #define __UNISTD_H
 #include <segment.h>
 
-#define MAX_SYSCALL 10
+#define MAX_SYSCALL 12
 
 enum __NR {
     __NR_nosys,
@@ -16,6 +16,7 @@ enum __NR {
     __NR_link,
     __NR_unlink,
     __NR_chdir,
+    __NR__exit,
 };
 
 // syscall with no params
@@ -62,12 +63,12 @@ type name(atype ap,btype bp) { \
 }
 
 // syscall with 3 params
-#define _syscall3(typem,name,atype,btype,ctype) \
+#define _syscall3(type,name,atype,btype,ctype) \
 type name(atype ap,btype bp,ctype cp) { \
     int _res;\
     asm volatile ("int $0x80" \
         : "=a" (_res) \
-        : "0" (__NR_#name), "b" ((int) (ap)), "c" ((int) (bp)), "d" ((int) (dp)));\
+        : "0" (__NR_##name), "b" ((int) (ap)), "c" ((int) (bp)), "d" ((int) (cp)));\
     if (_res < 0) {\
         errno = -_res;\
         return -1;\
@@ -90,11 +91,12 @@ int sys_creat(struct regs* rgs);
 int sys_link(struct regs* rgs);
 int sys_unlink(struct regs* rgs);
 int sys_chdir(struct regs* rgs);
+int sys__exit(struct regs* rgs);
 
 static inline _syscall0(int, nosys);
 static inline _syscall0(int, fork);
 static inline _syscall0(int, read);
-static inline _syscall0(int, write);
+static inline _syscall3(int, write, int, char*, int);
 static inline _syscall0(int, open);
 static inline _syscall0(int, close);
 static inline _syscall0(int, waitpid);
@@ -102,5 +104,6 @@ static inline _syscall0(int, creat);
 static inline _syscall0(int, link);
 static inline _syscall0(int, unlink);
 static inline _syscall0(int, chdir);
+static inline _syscall1(int, _exit, int);
 
 #endif

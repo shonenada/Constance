@@ -66,6 +66,12 @@ char* strchr(const char *str, char c) {
     return NULL;
 }
 
+char* strcpy(char *dst, const char *src) {
+    char *tmp = dst;
+    while((*dst++ = *src++));
+    return tmp;
+}
+
 char *strncpy (char *dst, const char *src, uint cnt) {
     char *tmp = dst;
     while(cnt && (*dst++ = *src++))
