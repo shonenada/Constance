@@ -3,6 +3,8 @@
 #include <segment.h>
 #include <sched.h>
 #include <unistd.h>
+#include <inode.h>
+#include <namei.h>
 
 int errno = 0;
 
@@ -57,64 +59,85 @@ int sys_nosys(struct regs* rgs) {
 }
 
 int sys_fork(struct regs* rgs) {
-    if (DEBUG) {
-        puts("debug: ---- do_fork(); -----");
-    }
     return do_fork(rgs);
 }
 
+// int read(fd, buf, size);
 int sys_read(struct regs* rgs) {
-    puts("sys_read");
-    return 0;
+    int fd = rgs->ebx;
+    char *buf = (char*)rgs->ecx;
+    int size = rgs->edx;
+
+    return do_read(fd, buf, size);
 }
 
+// int write(fd, buf, size)
 int sys_write(struct regs* rgs) {
     int fd = rgs->ebx;
-    int cnt = rgs->edx;
+    int size = rgs->edx;
     char *buf = (char*) rgs->ecx;
-    return do_write(fd, buf, cnt);
+
+    return do_write(fd, buf, size);
 }
 
+// int open(path, flag, mode);
 int sys_open(struct regs* rgs) {
-    puts("sys_open");
-    return 0;
+    char* path = (char*)(rgs->ebx);
+    int flag = rgs->flag;
+    int mode = rgs->mode;
+
+    return do_open(path, flag, mode);
 }
 
+// int close(int fd);
 int sys_close(struct regs* rgs) {
-    puts("sys_close");
-    return 0;
+    int fd = rgs->ebx;
+    return do_close(fd);
 }
 
 int sys_waitpid(struct regs* rgs) {
+    // TODO
     puts("sys_waitpid");
     return 0;
 }
 
+// int creat(char *path, int mode);
 int sys_creat(struct regs* rgs) {
-    puts("sys_creat");
-    return 0;
+    char* path = (char*) rgs->ebx;
+    int mode = rgs->ecx;
+    return do_creat(path, mode);
 }
 
+// int link(char* path1, char* path2);
 int sys_link(struct regs* rgs) {
-    puts("sys_link");
-    return 0;
+    char *path1 = (char*) rgs->ebx;
+    char* path2 = (char*) rgs->ecx;
+    return do_link(path1, path2);
 }
 
+// int unlink(path);
 int sys_unlink(struct regs* rgs) {
-    puts("sys_unlink");
-    return 0;
+    char* path = (char*)rgs->ebx;
+    return do_unlink(path);
 }
 
 int sys_chdir(struct regs* rgs) {
-    puts("sys_chidr");
+    // TODO
     return 0;
 }
 
 int sys_access(struct regs* rgs) {
-    puts("sys_access");
-    return 0;
+    char* path = (char*)rgs->ebx;
+    int mode = rgs->ecx;
+    struct inode *ip;
+    ip = namei(path, 0);
+    if (ip == NULL) {
+        return -1;
+    }
+    return do_access(ip, mode);
 }
 
 int sys__exit(struct regs* rgs) {
+    // TODO
     return do_exit((int) rgs->ebx);
 }
