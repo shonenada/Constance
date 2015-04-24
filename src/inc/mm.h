@@ -69,7 +69,7 @@ int do_page_fault(struct regs *rgs);
 int do_no_page(uint addr);
 int do_wp_page(uint addr);
 
-struct pte* pte_find(struct pde* pgd, uint vaddr);
+struct pte* pte_find(struct pde* pgd, uint vaddr, uint creat);
 void ptab_init(struct pte *pt, uint flag);
 void pgd_init(struct pde *pgd);
 int pgd_copy(struct pde *to, struct pde *from);
@@ -84,5 +84,7 @@ int bkfree(struct bucket_desc* bucket);
 void* kmalloc(int size);
 inline void* _kalloc(struct bucket_desc* bucket, int size);
 int kmfree();
+
+void dump_pte(struct pte*);
 
 #endif
