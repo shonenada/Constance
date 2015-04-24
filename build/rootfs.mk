@@ -26,7 +26,6 @@ rootfs.img:
 	@cp -r ./root/* /tmp/c_mnt_root
 	@sudo mknod /tmp/c_mnt_root/dev/tty0 c 1 0
 	@mkdir /tmp/c_mnt_root/usr
-	@echo "hello from Constance" > /tmp/c_mnt_root/usr/hello.txt
-	@echo "Constance" > /tmp/c_mnt_root/Constance.txt
+	@echo "hello from Constance" > /tmp/c_mnt_root/home/hello.txt
 	@sudo umount /tmp/c_mnt_root
 	@rm -rf /tmp/c_mnt_root
