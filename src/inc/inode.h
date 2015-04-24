@@ -8,7 +8,7 @@ struct d_inode {
     ushort mode;
     ushort uid;
     uint size;
-    uint time;
+    uint mtime;
     uchar gid;
     uchar nlinks;
     ushort zone[9];
