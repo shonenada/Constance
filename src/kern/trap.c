@@ -3,6 +3,7 @@
 #include <time.h>
 #include <console.h>
 #include <unistd.h>
+#include <sched.h>
 
 extern uint hwint[256];
 struct idt_entry idt[256];    // must be 256
@@ -112,10 +113,10 @@ void irq_init() {
 }
 
 void idt_init() {
-    irq_remap();
     idt_p.limit = (SIZE_IDT_ENTRY * 256) - 1;
     idt_p.base = (uint) &idt;
     memset(&idt, 0, SIZE_IDT_ENTRY * 256);
+    irq_remap();
     isrs_init();
     irq_init();
     asm volatile ("lidt %0" :: "m"(idt_p));
@@ -125,6 +126,9 @@ void idt_init() {
 void int_handler(struct regs* rgs) {
     int (*handler) (struct regs *r);
 
+    if ((rgs->cs & 3) == RING3) {
+        current->rgs = rgs;
+    }
     if (rgs->int_no < 32) {
         printk(exception_msg[rgs->int_no]);
         printk(" Exception with ERRNO %d ! System Halted! \n", rgs->err_code);
@@ -145,11 +149,35 @@ void int_handler(struct regs* rgs) {
         handler = &do_syscall;
         handler(rgs);
     }
+    if ((rgs->cs & 3) == RING3) {
+        schedule();
+    }
+}
+
+void jump_to_user_mode() {
+    asm volatile ("\
+        cli; \
+        mov $0x23 , %ax; \
+        mov %ax, %ds; \
+        mov %ax, %es; \
+        mov %ax, %fs; \
+        mov %ax, %gs; \
+        mov %esp, %eax; \
+        pushl $0x23; \
+        pushl %eax; \
+        pushf; \
+        mov $0x200, %eax; \
+        push %eax; \
+        pushl $0x1b; \
+        push $1f; \
+        iret; \
+        1: ");
 }
 
 void dump_rgs(struct regs* rgs) {
-    printk("gs: %d, fs: %d, es: %d, ds: %d\n", rgs->gs, rgs->fs, rgs->es, rgs->ds);
-    printk("edi: %d, esi: %d, ebp: %d\n", rgs->edi, rgs->esi, rgs->ebp);
-    printk("ebx: %d, edx: %d, ecx: %d, eax: %d\n", rgs->ebx, rgs->edx, rgs->ecx, rgs->eax);
-    printk("eip: %d", rgs->eip);
+    printk("intruction: %x\n", *(char*)(rgs->eip));
+    printk("gs: %x, fs: %x, es: %x, ds: %x\n", rgs->gs, rgs->fs, rgs->es, rgs->ds);
+    printk("edi: %x, esi: %x, ebp: %x\n", rgs->edi, rgs->esi, rgs->ebp);
+    printk("ebx: %x, edx: %x, ecx: %x, eax: %x\n", rgs->ebx, rgs->edx, rgs->ecx, rgs->eax);
+    printk("eip: %x, esp: %x\n", rgs->eip, rgs->esp);
 }

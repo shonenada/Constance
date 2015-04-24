@@ -6,6 +6,9 @@
 #include <sig.h>
 #include <sched.h>
 
+void _sigret() {
+}
+
 int sendsig(uint pid, uint sig_no) {
     struct ktask * task = tasks[pid];
     if (pid == 0 || sig_no < 1 || sig_no > NSIG || task == NULL)
@@ -63,9 +66,10 @@ int issig() {
  * Perform action for specific signal. 
  */
 int do_sig() {
-    uint sig;
-    struct regs *sf;
+    uint sig, usr, esp;
+    struct regs *rf;
     struct sigact *sa;
+    struct context context, cp;
 
     void *ufunc;
 
@@ -81,15 +85,32 @@ int do_sig() {
     current->cursig = 0;
 
     if (sa->handler != SIG_DFL) {
-        sf = &(current->rgs);
-        //
+        rf = &(current->rgs);
+        store_regs(&context, rf, current->sigmask);
+
         if ((sa->flags & SIG_NOMASK) == 0) {
             current->sigmask |= sa->mask;
         }
+
+        esp = rf->esp;
+        usr = upush(&esp, (char*)&_sigret, 16);
     }
 
     switch (sig) {
     }
 
     return 0;
+}
+
+void store_regs(struct context* context, struct regs* rgs, uint mask) {
+    context->eip = rgs->eip;
+    context->esp = rgs->esp;
+    context->ebx = rgs->ebx;
+    context->ecx = rgs->ecx;
+    context->edx = rgs->edx;
+    context->esi = rgs->esi;
+    context->edi = rgs->edi;
+    context->ebp = rgs->ebp;
+    context->__sigmask = mask;
+
 }

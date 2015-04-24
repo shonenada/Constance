@@ -10,8 +10,10 @@
 #include <fs.h>
 #include <inode.h>
 #include <file.h>
+#include <sh.h>
 
 void init() {
+    int fd;
     struct inode *ip;
 
     do_mount(rootdev, NULL);
@@ -22,18 +24,19 @@ void init() {
     ip->count += 2;
     iput(ip);
 
-    if(do_open("/dev/tty0", O_RDWR, 0) < 0) {
+    if(fd = do_open("/dev/tty0", O_RDWR, 0) < 0) {
         panic("bad /dev/tty0 \n");
     }
-
-    do_dup(0);    // stdout
-    do_dup(0);    // stderr
-
+    do_dup(fd);
+    do_dup(fd);
+    do_dup(fd);
     do_fcntl(0, F_SETFD, 0);
     do_fcntl(1, F_SETFD, 0);
     do_fcntl(2, F_SETFD, 0);
 
-    do_exec("/bin/test", NULL);
+//    do_exec("/bin/test", NULL);
+
+    repl();
 
     for(;;) {
     }

@@ -1,5 +1,7 @@
 #include <system.h>
+#include <asm.h>
 #include <segment.h>
+#include <sched.h>
 
 struct seg_desc gdt[NGDT];
 struct desc_ptr gp;    // gdt pointer;
@@ -29,7 +31,8 @@ void ldt_set(struct seg_desc *entry, uint base) {
 }
 
 void tss_set(struct seg_desc *entry, uint base) {
-    seg_set(entry, base, 0x68, RING0, STS_TYPE_TTS32A);     // limit must more than 0x67
+    int limit = base + sizeof(struct tss_entry);
+    seg_set(entry, base, limit, RING0, STS_TYPE_TTS32A);     // limit must more than 0x67
     entry->attr_s = 0;    // s = 0, system segment
 }
 
@@ -43,5 +46,10 @@ void gdt_init() {
     gp.base = (uint) &gdt;
     gp.limit = (SIZE_DESC_ENTRY * NGDT) - 1;
 
-    gdt_flush();    // flush gdt, defined in entry.asm
+    tss_set(&gdt[TSS0], (uint)&tss);
+
+    // gdt_flush();    // flush gdt, defined in entry.asm
+    asm volatile("lgdt %0" :: "m"(gp));
+
+    ltr((TSS0<<3));
 }

@@ -9,6 +9,16 @@ int errno = 0;
 static void* sys_routines[MAX_SYSCALL] = {
     [__NR_nosys] = &sys_nosys,
     [__NR_fork] = &sys_fork,
+    [__NR_read] = &sys_read,
+    [__NR_write] = &sys_write,
+    [__NR_open] = &sys_open,
+    [__NR_close] = &sys_close,
+    [__NR_waitpid] = &sys_waitpid,
+    [__NR_creat] = &sys_creat,
+    [__NR_link] = &sys_link,
+    [__NR_unlink] = &sys_unlink,
+    [__NR_chdir] = &sys_chdir,
+    [__NR__exit] = &sys__exit,
 };
 
 // System call
@@ -34,6 +44,9 @@ int do_syscall(struct regs *rgs) {
 }
 
 int syserr(int eno) {
+    if (DEBUG) {
+        printk("error: %d\n", eno);
+    }
     current->error = eno;
     return -1;
 }
@@ -56,8 +69,10 @@ int sys_read(struct regs* rgs) {
 }
 
 int sys_write(struct regs* rgs) {
-    puts("sys_write");
-    return 0;
+    int fd = rgs->ebx;
+    int cnt = rgs->edx;
+    char *buf = (char*) rgs->ecx;
+    return do_write(fd, buf, cnt);
 }
 
 int sys_open(struct regs* rgs) {
@@ -100,3 +115,6 @@ int sys_access(struct regs* rgs) {
     return 0;
 }
 
+int sys__exit(struct regs* rgs) {
+    return do_exit((int) rgs->ebx);
+}
