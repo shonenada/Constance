@@ -8,7 +8,6 @@ struct ktask task0;
 struct tss_entry tss;
 struct ktask *current = NULL;
 struct ktask *tasks[NTASKS] = {NULL,};
-struct ktask task0;
 
 extern void _int_common_ret();
 
@@ -16,19 +15,28 @@ struct ktask* kspawn(void (*func)) {
     int i;
     uint pid;
     struct ktask *task;
+    struct file *fp;
 
     pid = find_empty();
     if (pid == -1) {
         panic("no free pid");
+        return NULL;
     }
 
     task = (struct ktask*) kmalloc(PAGE_SIZE);
+
     if (task == NULL) {
         panic("no page");
+        return NULL;
     }
 
     tasks[pid] = task;
     task->state = TASK_INTERRUPTIBLE;
+
+    task->cpu = current->cpu;
+    task->nice = current->nice;
+    task->priority = PUSER;
+
     task->pid = pid;
     task->ppid = current->pid;
     task->pgrp = current->pgrp;
@@ -45,13 +53,24 @@ struct ktask* kspawn(void (*func)) {
         task->sigacts[i] = current->sigacts[i];
     }
 
+    for(i=0;i<NOFILE;i++) {
+        fp = current->files[i];
+        if (fp != NULL) {
+            fp->count++;
+            fp->ino->count++;
+        }
+        task->files[i] = fp;
+        task->fdflag[i] = current->fdflag[i];
+    }
+
     task->pdir = (struct pde *)kmalloc(PAGE_SIZE);
     pgd_init(task->pdir);
     pgd_copy(task->pdir, current->pdir);
 
     task->context = current->context;
     task->context.eip = (uint)func;
-    // task->context.esp = (uint)task+PAGE_SIZE;
+
+    task->context.esp = (uint)task+PAGE_SIZE;
 
     task->state = TASK_RUNNING;
     return task;
@@ -75,7 +94,10 @@ void task0_init() {
     struct ktask *task = current = tasks[0] = &task0;
 
     task->state = TASK_RUNNING;
+    task->cpu = 0;
     task->priority = 0;
+    task->nice = PDEFAULT;
+
     task->pid = 0;
     task->ppid = 0;
     task->pgrp = 0;
@@ -98,3 +120,7 @@ void task0_init() {
     }
 }
 
+void dump_context (struct context * c) {
+    printk("edi(%x)=%x esi(%x)=%x ebx(%x)=%x ebp(%x)=%x eip(%x)=%x\n",
+           &(c->edi), c->edi, &(c->esi), c->esi, &(c->ebx), c->ebx, &(c->ebp), c->ebp, &(c->eip), c->eip);
+}
