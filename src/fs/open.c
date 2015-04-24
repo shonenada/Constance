@@ -142,13 +142,15 @@ struct file* falloc(int fd) {
     for(fp=&files[0]; fp<&files[NFILE]; fp++) {
         if (fp->count == 0) {
             fp->count = 1;
-            current->files[fd] = fp;
             fp->offset = 0;
             fp->flags = 0;
+            current->files[fd] = fp;
             return fp;
         }
     }
     syserr(EMFILE);
+#ifdef DEBUG
     panic("falloc: no free file");
+#endif
     return NULL;
 }

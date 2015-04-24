@@ -71,9 +71,6 @@ int do_write(int fd, char *buf, int cnt) {
         return -1;
     }
     if (fp->flags & O_RDONLY) {
-#ifdef DEBUG
-        printk("do_write(): fp is RDONLY\n");
-#endif
         syserr(EBADF);
         return -1;
     }
@@ -114,9 +111,6 @@ int do_lseek(uint fd, int off, int whence) {
 
     fp = current->files[fd];
     if ((fd >= NOFILE) || (fp == NULL) || (fp->ino == NULL)) {
-#ifdef DEBUG
-        printk("do_lseek(): fd >= NOFILE || fp == NULL, fd=%d\n", fd);
-#endif
         syserr(EBADF);
         return -1;
     }
