@@ -26,21 +26,17 @@ int do_open(char *path, uint flag, uint mode) {
     } else {
         ip = namei(path, 0);
         if (ip == NULL) {
-#ifdef DEBUG
-            printk("do_open(): ip is null");
-#endif
-            syserr(ENFILE);
-            iput(ip);
             return -1;
         }
-
         dev = ip->zone[0];
-        switch(ip->mode && S_IFMT) {
+        switch(ip->mode & S_IFMT) {
             case S_IFBLK:
                 // TODO
                 break;
             case S_IFCHR:
                 tty_open(dev);
+                break;
+            default:
                 break;
         }
     }
@@ -77,7 +73,6 @@ int do_close(int fd) {
         syserr(EBADF);
         return -1;
     }
-    current->files[fd] = NULL;
     iput(fp->ino);
     fp->count--;
     if (fp->count <= 0) {
@@ -85,6 +80,7 @@ int do_close(int fd) {
         fp->flags = 0;
         fp->offset = 0;
     }
+    current->files[fd] = NULL;
     return 0;
 }
 

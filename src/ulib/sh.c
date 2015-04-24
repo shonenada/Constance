@@ -3,6 +3,7 @@
 #include <fs.h>
 #include <sh.h>
 #include <console.h>
+#include <sched.h>
 
 #define LINE_SIZE 1024
 
@@ -32,6 +33,9 @@ int exec_cmd(char* buf) {
             arg[idx++] = *tmp++;
         arg[idx] = '\0';
         do_cat(arg);
+    } else if (strncmp(tmp, "print", 5) == 0) {
+        dump_task(current);
+        dump_inode(current->wdir);
     } else {
         printk("command not found: %s\n", tmp);
     }
