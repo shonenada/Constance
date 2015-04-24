@@ -8,14 +8,11 @@
 
 int do_cat(char *path) {
     int fd, n;
-    char buf[1024];
+    char buf[32];
     struct file *fp;
-    char path_buf[1024];
     struct stat statbuf;
 
-    strncpy(path_buf, path, 1024);
-
-    fd = do_open(path_buf, O_RDONLY, 0);
+    fd = do_open(path, O_RDONLY, 0);
 
     if (fd < 0) {
         printk("file %s not found.\n", path);
@@ -32,8 +29,8 @@ int do_cat(char *path) {
         return -1;
     }
 
-    while((n = do_read(fd, buf, 1020)) > 0) {
-        do_write(0, buf, n);
+    while((n = do_read(fd, buf, 32)) > 0) {
+        do_write(1, buf, n);
     }
 
     do_close(fd);
