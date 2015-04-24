@@ -28,7 +28,7 @@ int do_ls(char *path) {
     fp = current->files[fd];
     do_stat(fp->ino, &statbuf);
 
-    if (!(((statbuf.mode) & S_IFMT) == S_IFDIR)) {
+    if ((statbuf.mode & S_IFMT) != S_IFDIR) {
         do_close(fd);
         return -1;
     }
