@@ -29,11 +29,15 @@ int do_ls(char *path) {
     do_stat(fp->ino, &statbuf);
 
     if (!(((statbuf.mode) & S_IFMT) == S_IFDIR)) {
+        do_close(fd);
         return -1;
     }
 
     while((r=do_read(fd, &dirbuf, sizeof(struct dire))) > 0) {
         printk("%s\t", dirbuf.name);
     }
+
+    printk("\n");
+    do_close(fd);
     return 0;
 }

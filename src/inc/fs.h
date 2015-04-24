@@ -74,6 +74,7 @@ struct sblk* do_mount(ushort dev, struct inode *ip);
 
 int do_ls(char* path);
 int do_cd(char* path);
+int do_cat(char* path);
 
 void dump_sblk(struct sblk* blk);
 void dump_mnts();
