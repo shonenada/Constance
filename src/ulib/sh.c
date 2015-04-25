@@ -1,5 +1,6 @@
 #include <const.h>
 #include <system.h>
+#include <asm.h>
 #include <fs.h>
 #include <sh.h>
 #include <console.h>
