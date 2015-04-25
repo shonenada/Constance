@@ -59,6 +59,23 @@ do_swtch:
   push dword [eax]
   ret
 
+[global _jump_u]
+_jump_u:
+  pop dword eax    ;; retuen eip
+  pop dword ebx    ;; eip
+  pop dword ecx    ;; esp3
+  mov ax, 0x23    ;; ds = (4<<3|3)
+  mov ds, ax
+  mov es, ax
+  mov fs, ax
+  mov gs, ax
+  push dword 0x23    ;; ss3
+  push dword ecx    ;; esp3
+  pushf    ;; eflags
+  push dword 0x1B    ;; cs = (3<<3|3)
+  push dword ebx    ;; eip
+  iretd
+
 [section .text]
 [global _int_common_ret]
 ;; hardware interrupt common stub,

@@ -12,6 +12,7 @@
 #include <file.h>
 #include <sh.h>
 
+
 void init() {
     int fd;
     struct inode *ip;
