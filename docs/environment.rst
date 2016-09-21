@@ -57,7 +57,7 @@ Bochs Debugger
     $ wget http://sourceforge.net/projects/bochs/files/bochs/2.4.6/bochs-2.4.6.tar.gz/download -O bochs-2.4.6.tar.gz
     $ tar -zxvf bochs-2.4.6.tar.gz
     $ cd bochs-2.4.6
-    $ configure --enable-debugger --enable-disasm --enable-debugger-gui --with-x --with-term
+    $ ./configure --enable-debugger --enable-disasm --enable-debugger-gui --with-x --with-term
     $ make
     $ sudo cp ./bochs /usr/bin/bochs-dbg
 
